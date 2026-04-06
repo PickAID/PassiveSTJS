@@ -38,12 +38,16 @@ repositories {
     mavenCentral()
 }
 
+def passiveIntegrationClassesDir = file("../PassiveSkillTreeIntegration/build/classes/java/main")
+
 dependencies {
     minecraft "net.minecraftforge:forge:${props["mc_version"]}-${props["forge_version"]}"
     implementation fg.deobf("dev.latvian.mods:kubejs-forge:${props["kubejs_version"]}")
     implementation fg.deobf("dev.latvian.mods:rhino-forge:${props["rhino_version"]}")
     implementation fg.deobf("dev.architectury:architectury-forge:${props["architectury_version"]}")
     implementation fg.deobf("curse.maven:passive-skill-tree-850298:7264152")
+    compileOnly files(passiveIntegrationClassesDir)
+    testImplementation files(passiveIntegrationClassesDir)
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.2"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.2"
 }

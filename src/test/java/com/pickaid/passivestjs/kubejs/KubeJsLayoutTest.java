@@ -15,5 +15,6 @@ class KubeJsLayoutTest {
         assertTrue(Files.isDirectory(kubeJsRoot.resolve("server_scripts/passivestjs/content")));
         assertTrue(Files.exists(kubeJsRoot.resolve("server_scripts/passivestjs/content/10_test_tree.js")));
         assertTrue(Files.exists(kubeJsRoot.resolve("server_scripts/passivestjs/docs/90_probe_docs.js")));
+        assertTrue(Files.exists(kubeJsRoot.resolve("server_scripts/passivestjs/runtime/10_ammo_burst_events.js")));
     }
 }
