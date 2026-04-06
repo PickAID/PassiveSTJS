@@ -48,6 +48,17 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.2"
 }
 
+jar {
+    manifest {
+        attributes([
+                "Implementation-Title"   : project.name,
+                "Implementation-Version" : archiveVersion,
+                "Implementation-Vendor"  : props["mod_authors"]
+        ])
+    }
+}
+
 test {
     useJUnitPlatform()
+    dependsOn jar
 }
