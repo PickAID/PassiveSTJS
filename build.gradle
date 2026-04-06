@@ -1,0 +1,53 @@
+plugins {
+    id 'net.neoforged.gradle' version '[6.0.13, 6.2)'
+    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+}
+
+def props = new Properties()
+file("build.txt").withInputStream(props.&load)
+
+group = "com.pickaid"
+version = props["mod_version"]
+base {
+    archivesName = "${props["archive_name"]}-${props["mc_version"]}"
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: 'parchment', version: '2023.09.03-1.20.1'
+}
+
+repositories {
+    maven { url = "https://maven.minecraftforge.net" }
+    maven {
+        name = "Latvian"
+        url = "https://maven.latvian.dev/releases"
+        content { includeGroup "dev.latvian.mods" }
+    }
+    maven {
+        name = "Architectury"
+        url = "https://maven.architectury.dev/"
+        content { includeGroup "dev.architectury" }
+    }
+    maven {
+        name = "CurseMaven"
+        url = "https://cursemaven.com"
+        content { includeGroup "curse.maven" }
+    }
+    mavenCentral()
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${props["mc_version"]}-${props["forge_version"]}"
+    implementation fg.deobf("dev.latvian.mods:kubejs-forge:${props["kubejs_version"]}")
+    implementation fg.deobf("dev.latvian.mods:rhino-forge:${props["rhino_version"]}")
+    implementation fg.deobf("dev.architectury:architectury-forge:${props["architectury_version"]}")
+    implementation fg.deobf("curse.maven:passive-skill-tree-850298:7264152")
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.2"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.2"
+}
+
+test {
+    useJUnitPlatform()
+}
