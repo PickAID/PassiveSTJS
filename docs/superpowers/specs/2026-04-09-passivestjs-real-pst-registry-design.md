@@ -191,6 +191,59 @@ Fixed PST enums such as frame, target, logic, and operation should be represente
 
 User-facing text such as descriptions must accept translation-backed values. String-only text APIs remain insufficient.
 
+## Use Case Coverage
+
+This design is accepted only if the implementation covers all of these use cases.
+
+### Registry Registration
+
+- register new types in all 10 real PST registries from `startup_scripts`
+- register built-in-like custom serializers, not just wrappers around existing built-ins
+- allow optional compat modules such as PassiveIntegration to contribute additional registry entries without becoming a hard dependency
+- keep PST built-in entries visible as normal registry entries for lookup, typing, and docs
+
+### Tree and Skill Content
+
+- create entirely new trees from KubeJS
+- edit existing PST trees from KubeJS
+- clear default trees through script or config without splitting runtime state
+- reference registered bonus, multiplier, condition, listener, requirement, numeric value, and item bonus types from tree content
+- support complex trees, including icon, frame, requirement, bonus, and layout-heavy nodes
+- keep editor-visible and normal-screen-visible trees on the same final resolved graph
+
+### First Load and Reload
+
+- entering the world the first time must show the same tree data that reload would show
+- `/reload` must not be required to make KubeJS trees or default PST trees appear
+- `/reload` must rebuild the same in-memory result without duplicate trees, missing trees, or editor-only trees
+- normal opening by keybind and opening through editor or command must resolve the same tree state
+
+### Typing and Script UX
+
+- registry-backed type slots must stop appearing as loose `string` or `object` in the public API
+- Probe completion must come from actual registry-backed types
+- fixed PST enums such as frame and operation must stay easy to use, but they are convenience values, not fake registries
+- description and similar text fields must support translation-backed values
+- KubeJS-facing docs must use `@Info` / `@Param` style metadata consistently
+
+### Probe and Documentation
+
+- legacy ProbeJS must see the real startup registries, not a fake exported catalog
+- generated docs must describe actual registry targets and actual content contracts
+- content-side type references must stay completion-friendly in Probe
+
+### Compatibility
+
+- PassiveSTJS must work when only SkillTree and KubeJS are installed
+- PassiveIntegration must remain optional
+- when PassiveIntegration is installed, ammo burst support must plug into the same registry-backed and content-backed system instead of creating a second path
+
+### Migration Safety
+
+- old helper-heavy APIs may remain temporarily only as adapters
+- adapters must delegate into the real registry-backed system
+- no compatibility layer may keep a separate authoritative registry model alive
+
 ## ProbeJS Legacy Strategy
 
 PassiveSTJS must target the installed legacy ProbeJS stack, not the newer `zzzank` plugin API.
