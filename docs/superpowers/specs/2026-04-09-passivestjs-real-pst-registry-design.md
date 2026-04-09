@@ -118,6 +118,14 @@ It does not register new types.
 
 Content builders must consume registered types through registry-backed parameters. A bonus builder, for example, should be constructed around a real skill bonus serializer id from `skilltree:skill_bonuses`, not around a fake `kind + id` registry handle.
 
+`skillTreeContent` must also stop depending on helper catalogs as the normal way to discover or select types. The normal content authoring flow should be:
+
+- the script sees real registry-backed content entrypoints
+- Probe provides completion for the valid registered types
+- content builders accept those typed values directly
+
+Small convenience helpers may still exist for fixed non-registry enums or common templates, but helper objects must not remain the main discovery path for bonus, condition, listener, requirement, value, multiplier, or item bonus types.
+
 The important contract is:
 
 - startup registers serializer types
@@ -222,6 +230,7 @@ This design is accepted only if the implementation covers all of these use cases
 
 - registry-backed type slots must stop appearing as loose `string` or `object` in the public API
 - Probe completion must come from actual registry-backed types
+- `skillTreeContent` authoring must get normal completion from Probe plugin, not rely on helper catalogs to discover valid types
 - fixed PST enums such as frame and operation must stay easy to use, but they are convenience values, not fake registries
 - description and similar text fields must support translation-backed values
 - KubeJS-facing docs must use `@Info` / `@Param` style metadata consistently
@@ -229,6 +238,7 @@ This design is accepted only if the implementation covers all of these use cases
 ### Probe and Documentation
 
 - legacy ProbeJS must see the real startup registries, not a fake exported catalog
+- Probe plugin work must cover `skillTreeContent` authoring, not only startup registration
 - generated docs must describe actual registry targets and actual content contracts
 - content-side type references must stay completion-friendly in Probe
 
