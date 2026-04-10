@@ -3,6 +3,7 @@ package com.pickaid.passivestjs.schema;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.Consumer;
@@ -16,6 +17,9 @@ public final class PSTSchemaBuilder {
     }
 
     public PSTSchemaBuilder field(String name, Consumer<FieldBuilder> consumer) {
+        if (fields.containsKey(name)) {
+            throw new IllegalArgumentException("Duplicate schema field: " + name);
+        }
         FieldBuilder field = new FieldBuilder(name);
         consumer.accept(field);
         fields.put(name, field.build());
@@ -23,7 +27,7 @@ public final class PSTSchemaBuilder {
     }
 
     public PSTSchema build(ResourceLocation id) {
-        return new PSTSchema(id, family, java.util.Map.copyOf(fields));
+        return new PSTSchema(id, family, Collections.unmodifiableMap(new LinkedHashMap<>(fields)));
     }
 
     public static final class FieldBuilder {

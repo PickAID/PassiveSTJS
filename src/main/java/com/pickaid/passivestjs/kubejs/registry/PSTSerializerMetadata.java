@@ -17,6 +17,10 @@ public record PSTSerializerMetadata(PSTSerializerFamily family, PSTNodeFamily no
         Objects.requireNonNull(family, "family");
         Objects.requireNonNull(nodeFamily, "nodeFamily");
         Objects.requireNonNull(id, "id");
+        PSTNodeFamily expectedNodeFamily = toNodeFamily(family);
+        if (nodeFamily != expectedNodeFamily) {
+            throw new IllegalArgumentException("nodeFamily " + nodeFamily + " does not match family " + family);
+        }
     }
 
     public Optional<PSTSchema> schema() {
