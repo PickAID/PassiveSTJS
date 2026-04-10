@@ -1,0 +1,14 @@
+package com.pickaid.passivestjs.schema;
+
+public enum PSTNodeFamily {
+    SKILL_BONUS,
+    SKILL_REQUIREMENT,
+    LIVING_CONDITION,
+    DAMAGE_CONDITION,
+    ITEM_CONDITION,
+    ENCHANTMENT_CONDITION,
+    EVENT_LISTENER,
+    NUMERIC_VALUE,
+    MULTIPLIER,
+    ITEM_BONUS
+}
