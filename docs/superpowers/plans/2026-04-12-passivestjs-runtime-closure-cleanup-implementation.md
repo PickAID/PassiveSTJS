@@ -1003,7 +1003,7 @@ StartupEvents.registry('skilltree:item_bonuses', event => {
 PassiveSTJSEvents.skillTreeContent(event => {
   const tree = event.editTree('kubejs:passivestjs_showcase')
   tree.skill('kubejs:passivestjs/runtime_spark')
-    .title('skill.kubejs.passivestjs.runtime_spark.name')
+    .titleKey('kubejs.passivestjs.skill.runtime_spark.title')
     .bonus('kubejs:smoke_bonus', bonus => {
       bonus.amount(2)
       bonus.eventListener('kubejs:smoke_listener', listener => {
