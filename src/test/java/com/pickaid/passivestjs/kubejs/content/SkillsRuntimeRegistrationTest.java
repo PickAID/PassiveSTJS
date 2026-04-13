@@ -27,12 +27,12 @@ class SkillsRuntimeRegistrationTest {
     void generatedKubejsContentPopulatesPstRuntimeMaps() {
         SkillTreeBuilder tree = new SkillTreeBuilder("kubejs:pi_test_tree");
         SkillBuilder root = tree.startingSkill("kubejs:pi_test_root")
-                .title("PI Test Root")
+                .titleLiteral("PI Test Root")
                 .position(0, 0);
         tree.skill("kubejs:pi_test_child")
-                .title("PI Test Child")
+                .titleLiteral("PI Test Child")
                 .position(48, 0)
-                .connect(root);
+                .connect("kubejs:pi_test_root");
         tree.limit("pi_test", 2);
 
         for (SkillBuilder skill : tree.builtSkills()) {
@@ -62,7 +62,7 @@ class SkillsRuntimeRegistrationTest {
         ResourceLocation rootId = new ResourceLocation("kubejs", "pi_test_root");
 
         SkillTreeBuilder tree = new SkillTreeBuilder(treeId);
-        tree.startingSkill(rootId).title("PI Test Root");
+        tree.startingSkill(rootId).titleLiteral("PI Test Root");
 
         for (SkillBuilder skill : tree.builtSkills()) {
             Skills.INSTANCE.applyRuntimeSkill(skill.toJson());
@@ -82,7 +82,7 @@ class SkillsRuntimeRegistrationTest {
         ResourceLocation skillId = new ResourceLocation("kubejs", "pi_test_root");
 
         SkillBuilder existingSkill = Skills.INSTANCE.createStartingSkill(skillId)
-                .title("Existing Root")
+                .titleLiteral("Existing Root")
                 .icon("minecraft:textures/item/diamond.png")
                 .background("skilltree:textures/icons/background/notable.png")
                 .border("skilltree:textures/tooltip/notable.png")
@@ -94,7 +94,7 @@ class SkillsRuntimeRegistrationTest {
         Skills.INSTANCE.applyRuntimeTree(existingTree.toJson());
 
         SkillTreeBuilder editedTree = Skills.INSTANCE.createTree(treeId);
-        var editedSkill = editedTree.skill(skillId).title("Edited Root");
+        var editedSkill = editedTree.skill(skillId).titleLiteral("Edited Root");
 
         assertEquals("minecraft:textures/item/diamond.png", editedSkill.toJson().get("iconTexture").getAsString());
         assertEquals("skilltree:textures/icons/background/notable.png", editedSkill.toJson().get("backgroundTexture").getAsString());
@@ -109,7 +109,7 @@ class SkillsRuntimeRegistrationTest {
         ResourceLocation skillId = new ResourceLocation("kubejs", "pi_test_root");
 
         SkillBuilder existingSkill = Skills.INSTANCE.createStartingSkill(skillId)
-                .title("Generated Root")
+                .titleLiteral("Generated Root")
                 .icon("minecraft:textures/item/diamond.png");
         SkillTreeBuilder existingTree = new SkillTreeBuilder(treeId)
                 .addSkill(existingSkill);
