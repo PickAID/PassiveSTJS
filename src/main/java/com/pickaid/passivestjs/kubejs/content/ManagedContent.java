@@ -28,11 +28,18 @@ public final class ManagedContent {
         return MANAGED_SKILL_IDS.contains(id);
     }
 
-    public static synchronized Set<ResourceLocation> managedTreeIds() {
+    public static synchronized Set<ResourceLocation> treeIds() {
         return new LinkedHashSet<>(MANAGED_TREE_IDS);
     }
 
-    public static synchronized Set<ResourceLocation> managedSkillIds() {
+    public static synchronized Set<ResourceLocation> skillIds() {
         return new LinkedHashSet<>(MANAGED_SKILL_IDS);
+    }
+
+    static synchronized Snapshot snapshot() {
+        return new Snapshot(new LinkedHashSet<>(MANAGED_TREE_IDS), new LinkedHashSet<>(MANAGED_SKILL_IDS));
+    }
+
+    record Snapshot(Set<ResourceLocation> treeIds, Set<ResourceLocation> skillIds) {
     }
 }
