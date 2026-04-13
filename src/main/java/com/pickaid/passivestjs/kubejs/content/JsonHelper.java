@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import dev.latvian.mods.kubejs.util.JsonIO;
 import dev.latvian.mods.rhino.Wrapper;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import com.pickaid.passivestjs.kubejs.builder.JsonFragment;
 
@@ -25,6 +26,19 @@ public final class JsonHelper {
 
     public static JsonArray array() {
         return new JsonArray();
+    }
+
+    public static JsonObject translationText(String key) {
+        JsonObject json = new JsonObject();
+        json.addProperty("type", "translate");
+        json.addProperty("translate", key);
+        return json;
+    }
+
+    public static JsonObject literalText(String text) {
+        JsonObject json = new JsonObject();
+        json.addProperty("text", text);
+        return json;
     }
 
     public static JsonElement copy(JsonElement element) {
@@ -58,17 +72,6 @@ public final class JsonHelper {
         return element.getAsJsonObject();
     }
 
-    public static void addObject(JsonObject target, String key, Object value) {
-        JsonElement element = optionalElement(value);
-        if (element == null) {
-            return;
-        }
-        if (!element.isJsonObject()) {
-            throw new IllegalArgumentException(key + " must be a JSON object");
-        }
-        target.add(key, element);
-    }
-
     public static String pretty(Object value) {
         return JsonIO.toPrettyString(requireElement(value, "value"));
     }
@@ -83,6 +86,9 @@ public final class JsonHelper {
         }
         if (unwrapped instanceof JsonElement element) {
             return copy(element);
+        }
+        if (unwrapped instanceof Component component) {
+            return Component.Serializer.toJsonTree(component);
         }
         if (unwrapped instanceof ResourceLocation resourceLocation) {
             return JsonIO.of(resourceLocation.toString());

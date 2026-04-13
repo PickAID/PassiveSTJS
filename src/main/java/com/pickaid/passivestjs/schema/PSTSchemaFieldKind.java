@@ -9,5 +9,7 @@ public enum PSTSchemaFieldKind {
     TEXT,
     ENUM,
     REGISTRY_ID,
+    NODE,
+    NODE_LIST,
     LIST
 }

@@ -11,10 +11,15 @@ import java.util.Optional;
 public final class PSTSerializerMetadataIndex {
     private static final EnumMap<PSTSerializerFamily, Map<ResourceLocation, PSTSerializerMetadata>> BY_FAMILY =
             new EnumMap<>(PSTSerializerFamily.class);
+    private static final EnumMap<PSTNodeFamily, Map<ResourceLocation, PSTSerializerMetadata>> BY_NODE_FAMILY =
+            new EnumMap<>(PSTNodeFamily.class);
 
     static {
         for (PSTSerializerFamily family : PSTSerializerFamily.values()) {
             BY_FAMILY.put(family, new LinkedHashMap<>());
+        }
+        for (PSTNodeFamily family : PSTNodeFamily.values()) {
+            BY_NODE_FAMILY.put(family, new LinkedHashMap<>());
         }
     }
 
@@ -23,6 +28,7 @@ public final class PSTSerializerMetadataIndex {
 
     public static synchronized PSTSerializerMetadata remember(PSTSerializerMetadata metadata) {
         BY_FAMILY.get(metadata.family()).put(metadata.id(), metadata);
+        BY_NODE_FAMILY.get(metadata.nodeFamily()).put(metadata.id(), metadata);
         return metadata;
     }
 
@@ -31,10 +37,7 @@ public final class PSTSerializerMetadataIndex {
     }
 
     public static synchronized Optional<PSTSerializerMetadata> find(PSTNodeFamily family, ResourceLocation id) {
-        return BY_FAMILY.values().stream()
-                .map(byId -> byId.get(id))
-                .filter(metadata -> metadata != null && metadata.nodeFamily() == family)
-                .findFirst();
+        return Optional.ofNullable(BY_NODE_FAMILY.get(family).get(id));
     }
 
     public static synchronized Map<PSTSerializerFamily, Map<ResourceLocation, PSTSerializerMetadata>> snapshot() {
@@ -48,5 +51,6 @@ public final class PSTSerializerMetadataIndex {
 
     public static synchronized void clear() {
         BY_FAMILY.values().forEach(Map::clear);
+        BY_NODE_FAMILY.values().forEach(Map::clear);
     }
 }

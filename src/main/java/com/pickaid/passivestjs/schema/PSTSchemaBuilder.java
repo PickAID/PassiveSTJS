@@ -1,6 +1,7 @@
 package com.pickaid.passivestjs.schema;
 
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,9 +35,10 @@ public final class PSTSchemaBuilder {
         private final String name;
         private PSTSchemaFieldKind kind = PSTSchemaFieldKind.STRING;
         private boolean required;
-        private String doc = "";
+        private Component doc = Component.empty();
         private Object defaultValue;
         private ResourceLocation registryTarget;
+        private PSTNodeFamily nodeTarget;
         private final List<String> enumChoices = new ArrayList<>();
 
         public FieldBuilder(String name) {
@@ -53,8 +55,8 @@ public final class PSTSchemaBuilder {
             return this;
         }
 
-        public FieldBuilder doc(String value) {
-            this.doc = value;
+        public FieldBuilder doc(Component value) {
+            this.doc = value == null ? Component.empty() : value.copy();
             return this;
         }
 
@@ -68,13 +70,30 @@ public final class PSTSchemaBuilder {
             return this;
         }
 
+        public FieldBuilder nodeTarget(PSTNodeFamily value) {
+            this.nodeTarget = value;
+            return this;
+        }
+
         public FieldBuilder enumChoice(String value) {
             this.enumChoices.add(value);
             return this;
         }
 
         private PSTSchemaField build() {
-            return new PSTSchemaField(name, kind, required, doc, defaultValue, registryTarget, List.copyOf(enumChoices));
+            if ((kind == PSTSchemaFieldKind.NODE || kind == PSTSchemaFieldKind.NODE_LIST) && nodeTarget == null) {
+                throw new IllegalArgumentException("Schema field '" + name + "' requires nodeTarget for kind " + kind);
+            }
+            return new PSTSchemaField(
+                    name,
+                    kind,
+                    required,
+                    doc,
+                    defaultValue,
+                    registryTarget,
+                    nodeTarget,
+                    List.copyOf(enumChoices)
+            );
         }
     }
 }

@@ -3,6 +3,8 @@ package com.pickaid.passivestjs.kubejs.registry;
 import com.pickaid.passivestjs.schema.PSTNodeFamily;
 import com.pickaid.passivestjs.schema.PSTSchema;
 import com.pickaid.passivestjs.schema.PSTSchemaRegistry;
+import com.pickaid.passivestjs.runtime.tooltip.PSTTooltipSpec;
+import com.pickaid.passivestjs.runtime.tooltip.PSTTooltipSpecRegistry;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Objects;
@@ -25,6 +27,18 @@ public record PSTSerializerMetadata(PSTSerializerFamily family, PSTNodeFamily no
 
     public Optional<PSTSchema> schema() {
         return PSTSchemaRegistry.find(nodeFamily, id);
+    }
+
+    public PSTSchema requireSchema() {
+        return schema().orElseThrow(() -> new IllegalStateException("No schema registered for " + id + " in " + nodeFamily));
+    }
+
+    public Optional<PSTTooltipSpec> tooltipSpec() {
+        return PSTTooltipSpecRegistry.find(nodeFamily, id);
+    }
+
+    public PSTTooltipSpec requireTooltipSpec() {
+        return tooltipSpec().orElseThrow(() -> new IllegalStateException("No tooltip spec registered for " + id + " in " + nodeFamily));
     }
 
     private static PSTNodeFamily toNodeFamily(PSTSerializerFamily family) {
