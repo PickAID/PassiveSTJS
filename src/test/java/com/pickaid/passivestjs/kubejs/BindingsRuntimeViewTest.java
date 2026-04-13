@@ -294,7 +294,7 @@ class BindingsRuntimeViewTest {
         assertEquals(1, branchView.requirements().size());
         PSTRequirementView requirementView = branchView.requirements().get(0);
         assertEquals("kubejs:smoke_requirement", requirementView.typeId());
-        assertTrue(requirementView.passed());
+        assertFalse(requirementView.passed());
         assertTrue(requirementView.node().bool("allow").orElseThrow());
     }
 

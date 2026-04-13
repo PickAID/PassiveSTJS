@@ -40,6 +40,10 @@ public final class PSTRequirementView {
             return false;
         }
 
+        if (player == null) {
+            return false;
+        }
+
         try {
             return requirement.test(player);
         } catch (Throwable ignored) {
@@ -62,4 +66,3 @@ public final class PSTRequirementView {
         return requirement instanceof PSTCustomRuntimeSkillRequirement runtime ? runtime.node() : null;
     }
 }
-
