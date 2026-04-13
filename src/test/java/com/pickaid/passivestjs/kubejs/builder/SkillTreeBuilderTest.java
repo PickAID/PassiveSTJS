@@ -12,8 +12,8 @@ class SkillTreeBuilderTest {
     @Test
     void treeJsonIncludesBuiltSkillsAndLimits() {
         SkillTreeBuilder tree = new SkillTreeBuilder("kubejs:pi_test_tree");
-        var root = tree.startingSkill("kubejs:pi_test_root").title("PI Test Root");
-        tree.skill("kubejs:pi_test_child").title("PI Test Child").connect(root);
+        tree.startingSkill("kubejs:pi_test_root").titleLiteral("PI Test Root");
+        tree.skill("kubejs:pi_test_child").titleLiteral("PI Test Child").connect("kubejs:pi_test_root");
         tree.limit("pi_test", 2);
 
         JsonObject json = tree.toJson();
@@ -35,7 +35,7 @@ class SkillTreeBuilderTest {
         existing.add("skillIds", skillIds);
 
         SkillTreeBuilder tree = SkillTreeBuilder.fromJson(existing);
-        tree.skill("kubejs:pi_test_child").title("PI Test Child");
+        tree.skill("kubejs:pi_test_child").titleLiteral("PI Test Child");
 
         JsonArray mergedSkillIds = tree.toJson().getAsJsonArray("skillIds");
         assertEquals(2, mergedSkillIds.size());
@@ -52,7 +52,7 @@ class SkillTreeBuilderTest {
         existing.add("skillIds", skillIds);
 
         SkillTreeBuilder tree = SkillTreeBuilder.fromJson(existing);
-        tree.addSkill(new SkillBuilder("kubejs:pi_test_root", false).title("PI Test Root"));
+        tree.addSkill(new SkillBuilder("kubejs:pi_test_root", false).titleLiteral("PI Test Root"));
 
         JsonArray mergedSkillIds = tree.toJson().getAsJsonArray("skillIds");
         assertEquals(1, mergedSkillIds.size());

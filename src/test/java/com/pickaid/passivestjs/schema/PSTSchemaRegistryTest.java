@@ -2,6 +2,7 @@ package com.pickaid.passivestjs.schema;
 
 import com.pickaid.passivestjs.kubejs.registry.PSTSerializerFamily;
 import com.pickaid.passivestjs.kubejs.registry.PSTSerializerMetadata;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,7 @@ class PSTSchemaRegistryTest {
     @Test
     void schemaTracksFieldKindsDefaultsDocsAndRegistryTargets() {
         PSTSchema schema = PSTSchema.builder(PSTNodeFamily.SKILL_BONUS)
-                .field("amount", field -> field.kind(PSTSchemaFieldKind.DOUBLE).required().doc("Base bonus amount"))
+                .field("amount", field -> field.kind(PSTSchemaFieldKind.DOUBLE).required().doc(Component.literal("Base bonus amount")))
                 .field("operation", field -> field.kind(PSTSchemaFieldKind.ENUM)
                         .enumChoice("ADDITION")
                         .enumChoice("MULTIPLY_BASE")
@@ -37,7 +38,7 @@ class PSTSchemaRegistryTest {
 
         assertEquals(PSTSchemaFieldKind.DOUBLE, remembered.field("amount").kind());
         assertTrue(remembered.field("amount").required());
-        assertEquals("Base bonus amount", remembered.field("amount").doc());
+        assertEquals(Component.literal("Base bonus amount"), remembered.field("amount").doc());
         assertEquals("ADDITION", remembered.field("operation").defaultValue());
         assertTrue(remembered.field("operation").enumChoices().contains("MULTIPLY_BASE"));
         assertEquals(new ResourceLocation("skilltree", "skill_bonus_multipliers"), remembered.field("multiplier").registryTarget());
