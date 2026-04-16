@@ -5,3 +5,7 @@ run
 .idea
 *.iml
 .worktrees
+logs
+rhino.local.properties
+
+docs/superpowers

@@ -1,0 +1,98 @@
+# Examples
+
+Checked-in reference samples live under:
+
+`examples/kubejs/passivestjs/`
+
+These files are intentionally not auto-loaded by KubeJS.
+
+## File Map
+
+`01_startup_registry_runtime.js`
+
+- startup registry definitions
+- custom living condition
+- custom skill bonus multiplier
+- custom event listener
+- custom skill bonus
+- custom skill requirement
+
+`02_server_skill_tree_content.js`
+
+- full `PassiveSTJSEvents.skillTreeContent(...)` sample
+- tree title, root node, regular nodes, requirement node
+- custom runtime bonus and listener wiring
+- a node that points toward workbench item-bonus flow
+
+`03_server_runtime_api.js`
+
+- `PassiveSkillTreeJS.player(...)`
+- `PassiveSkillTreeJS.skill(...)`
+- `PassiveSkillTreeJS.tree(...)`
+- skill point grant and consume
+- learn and reset examples
+
+`05_server_requirement_listener_chain.js`
+
+- focused requirement plus listener wiring
+- smaller sample when you do not need the full showcase tree
+
+`06_client_lang_entries.js`
+
+- `ClientEvents.lang('en_us', ...)`
+- `ClientEvents.lang('zh_cn', ...)`
+- workbench text
+- equipment type translations
+- sample tree titles and descriptions
+
+`07_server_runtime_helper_samples.js`
+
+- player-bound `skill(...)`
+- `learned()`
+- `canLearn()`
+- requirement, bonus, and listener inspection
+
+`08_server_workbench_item_bonus_recipe.js`
+
+- `event.recipes.skilltree.workbench_item_bonus()`
+- `baseEquipmentTypeCondition(...)`
+- `ingredientTag(...)`
+- `attributeItemBonus(...)`
+- `requiresPassiveSkill()`
+
+`09_server_item_bonus_runtime_api.js`
+
+- `PassiveSkillTreeJS.item(stack)`
+- `bonusCount()`
+- `clearBonuses()`
+- `addItemBonus(...)`
+- `addAttributeItemBonus(...)`
+
+## Recommended Reading Order
+
+If you are new to the addon:
+
+1. `01_startup_registry_runtime.js`
+2. `02_server_skill_tree_content.js`
+3. `06_client_lang_entries.js`
+4. `03_server_runtime_api.js`
+5. `08_server_workbench_item_bonus_recipe.js`
+6. `09_server_item_bonus_runtime_api.js`
+
+## 中文说明
+
+这些 example 文件是“参考脚本”，不是自动加载脚本。
+
+最适合的使用方式是：
+
+- 先从对应页面理解 API 角色
+- 再去 `examples/kubejs/passivestjs/` 抄最接近的片段
+- 最后把片段移动到你自己的 `startup_scripts`、`server_scripts` 或 `client_scripts`
+
+如果你只想快速找到某一类例子：
+
+- 自定义注册，看 `01`
+- 树内容生成，看 `02`
+- 翻译，看 `06`
+- 运行时 helper，看 `03`、`07`、`09`
+- 工作台 recipe，看 `08`

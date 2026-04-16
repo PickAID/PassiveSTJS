@@ -1,0 +1,118 @@
+# Recipes
+
+`PassiveSTJS` exposes PST's workbench socket recipe through:
+
+```js
+event.recipes.skilltree.workbench_item_bonus()
+```
+
+Use it in `kubejs/server_scripts/`.
+
+## Required Parts
+
+The recipe wrapper requires:
+
+- `base_item_condition`
+- `item_bonus`
+
+If either is missing, the wrapper throws during recipe creation.
+
+`requires_passive_skill` defaults to `false`.
+
+## Base Item Condition Helpers
+
+You can set the base item condition with:
+
+- `baseItemCondition(typeId, consumer)`
+- `baseItemConditionSchema(typeId, consumer)`
+- `noBaseCondition()`
+- `baseEquipmentTypeCondition(equipmentType)`
+- `baseItemIdCondition(itemId)`
+- `baseTagCondition(tagId)`
+- `basePotionCondition(potionId)`
+- `baseFoodCondition()`
+- `baseEnchantedCondition()`
+
+## Item Bonus Helpers
+
+You can set the produced item bonus with:
+
+- `itemBonus(typeId, consumer)`
+- `itemBonusSchema(typeId, consumer)`
+- `skillBonusItemBonus(typeId, consumer)`
+- `skillBonusItemBonusSchema(typeId, consumer)`
+- `attributeItemBonus(consumer)`
+- `itemBonusList(consumer)`
+
+## Ingredient Helpers
+
+Supported ingredient methods:
+
+- `ingredient(inputItem, amount)`
+- `ingredient(inputItem)`
+- `ingredientItem(itemId, amount)`
+- `ingredientItem(itemId)`
+- `ingredientTag(tagId, amount)`
+- `ingredientTag(tagId)`
+
+## Minimal Pattern
+
+```js
+ServerEvents.recipes(event => {
+  event.recipes.skilltree.workbench_item_bonus()
+    .baseEquipmentTypeCondition('shield')
+    .ingredientTag('forge:ingots/copper', 2)
+    .attributeItemBonus(bonus => {
+      bonus.attribute('minecraft:generic.armor')
+      bonus.amount(2)
+      bonus.modifierId('8516d3f4-373e-42c3-9138-3215993b34c4')
+      bonus.bonusName('Workbench Upgrade')
+      bonus.operation(0)
+    })
+    .requiresPassiveSkill()
+    .id('kubejs:passivestjs_showcase_shield_socket')
+})
+```
+
+This matches the checked-in sample file `examples/kubejs/passivestjs/08_server_workbench_item_bonus_recipe.js`.
+
+## When To Use Workbench Recipes vs Runtime Item Mutation
+
+Use workbench recipes when:
+
+- the bonus should be added through PST's workbench flow
+- the bonus should be described as a socket or upgrade recipe
+- the bonus should optionally respect `requires_passive_skill`
+
+Use `PassiveSkillTreeJS.item(stack)` when:
+
+- the stack should gain or lose item bonuses outside the workbench
+- the source is a custom event, command, item use, or another runtime trigger
+
+## Passive Skill Requirement Flag
+
+`.requiresPassiveSkill()` sets `requires_passive_skill=true`.
+
+This only gates the workbench action. It does not define how the player gains socket capacity or which skill grants the relevant bonus. That still comes from your PST content and the upstream PST systems.
+
+## 中文说明
+
+这一页只讲工作台 recipe，不讲运行时直接给物品挂 bonus。
+
+你可以把两条路分开理解：
+
+- `event.recipes.skilltree.workbench_item_bonus()`
+  走 PST 原生工作台流程
+- `PassiveSkillTreeJS.item(stack)`
+  直接在运行时操作物品上的 item bonus
+
+这套 RecipeJS 包装器本身就是链式 API，核心就是先定：
+
+1. 这个配方能作用到什么物品上
+   `base...Condition(...)`
+2. 这个配方会往物品里塞什么 item bonus
+   `itemBonus(...)` 或内建 helper
+3. 需要什么材料
+   `ingredient...(...)`
+4. 是否要求玩家真的学过相关被动技能
+   `requiresPassiveSkill(...)`

@@ -1,0 +1,9 @@
+{
+  "overview.mdx": "Overview",
+  "startupevents": "Startup Events",
+  "serverevents": "Server Events",
+  "runtime-helpers.mdx": "Runtime Helpers",
+  "recipes.mdx": "Recipes",
+  "config.mdx": "Config",
+  "examples.mdx": "Examples"
+}

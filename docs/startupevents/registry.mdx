@@ -1,0 +1,101 @@
+# Startup Registry Integration
+
+Use `StartupEvents.registry('skilltree:...')` in `kubejs/startup_scripts/` when you want to register serializer-backed PST types.
+
+Supported registry ids:
+
+- `skilltree:skill_bonuses`
+- `skilltree:skill_bonus_multipliers`
+- `skilltree:living_conditions`
+- `skilltree:damage_conditions`
+- `skilltree:item_conditions`
+- `skilltree:enchantment_conditions`
+- `skilltree:event_listeners`
+- `skilltree:numeric_value_providers`
+- `skilltree:skill_requirements`
+- `skilltree:item_bonuses`
+
+## What The Checked-In Samples Cover
+
+The file `examples/kubejs/passivestjs/01_startup_registry_runtime.js` shows the canonical pattern for these families:
+
+- `living_conditions`
+  `.prefix(...)`, `.schema(...)`, `.test(...)`
+- `skill_bonus_multipliers`
+  `.value(...)`
+- `event_listeners`
+  `.prefix(...)`, `.schema(...)`, `.onAttack(...)`, `.onTick(...)`
+- `skill_bonuses`
+  `.effect(...)`, `.schema(...)`, `.onApply(...)`
+- `skill_requirements`
+  `.requirementText(...)`, `.schema(...)`, `.test(...)`
+
+That sample also shows schema fields with enum, int, double, resource-location, and node targets.
+
+## Minimal Pattern
+
+```js
+var PSTSchemaFieldKind = Java.loadClass('com.pickaid.passivestjs.schema.PSTSchemaFieldKind')
+
+StartupEvents.registry('skilltree:living_conditions', event => {
+  event.create('kubejs:sample_combat_state')
+    .prefix(context => Text.translate('living_condition.kubejs.sample_combat_state.crouching'))
+    .schema(schema => {
+      schema.field('state', field => field.kind(PSTSchemaFieldKind.ENUM)
+        .required()
+        .enumChoice('crouching')
+        .enumChoice('underwater'))
+    })
+    .test(context => {
+      var entity = context.entity()
+      return entity != null && entity.isCrouching()
+    })
+})
+```
+
+## How Registry Definitions Are Usually Used
+
+The normal flow is:
+
+1. Register a custom serializer-backed type in `startup_scripts`.
+2. Reference that type from `PassiveSTJSEvents.skillTreeContent(...)`.
+3. Add matching translation entries in `client_scripts`.
+
+For example, a custom event listener can be referenced from a custom skill bonus, and that bonus can then be attached to a generated skill in the content event.
+
+## Schema Notes
+
+The checked-in startup sample uses schema fields to drive both validation and authoring shape:
+
+- simple scalar fields like `int`, `double`, or `resource_location`
+- enum fields with explicit choices
+- node fields that target a specific PST family such as `EVENT_LISTENER`, `LIVING_CONDITION`, or `MULTIPLIER`
+
+This is why the sample can chain nested builders cleanly later in `skillTreeContent`.
+
+## Related Pages
+
+- [Server Content Event](../serverevents/content)
+- [Examples](../examples)
+
+## 中文说明
+
+这一页讲的是 `startup_scripts` 里的注册层，不是技能树内容层。
+
+适合放在这里的内容是：
+
+- 自定义 `skill bonus`
+- 自定义 `listener`
+- 自定义 `requirement`
+- 自定义各种 `condition`
+- 自定义 `item bonus`
+
+注册时最重要的三部分通常是：
+
+1. 文本显示接口，比如 `.prefix(...)`、`.effect(...)`、`.requirementText(...)`
+2. `.schema(...)`
+   定义字段、可选值、嵌套节点目标
+3. 运行时逻辑
+   比如 `.test(...)`、`.value(...)`、`.onAttack(...)`、`.onTick(...)`、`.onApply(...)`
+
+你可以把它理解成“先把类型系统和运行时行为注册好”，后面的树内容页面只是去引用这些类型。

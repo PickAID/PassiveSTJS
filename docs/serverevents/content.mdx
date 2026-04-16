@@ -1,0 +1,117 @@
+# Skill Tree Content
+
+`PassiveSTJSEvents.skillTreeContent(event => { ... })` is the main server-side entry point for generated PST content.
+
+Use it in `kubejs/server_scripts/`.
+
+## What The Event Exposes
+
+Source-backed public methods include:
+
+- `event.registries()`
+- `event.editTree(id)`
+- `event.editSkill(id)`
+- `event.editStartingSkill(id)`
+- `event.addSkillTree(id, overridesOrBuilder)`
+- `event.addSkill(id, overridesOrBuilder)`
+- `event.addStartingSkill(id, overridesOrBuilder)`
+- `event.removeTree(id)`
+- `event.removeSkill(id)`
+- `event.disableTree(id)`
+- `event.disableSkill(id)`
+- `event.clearDefaultTree()`
+- `event.clearDefaultTrees()`
+- `event.addDataJson(id, value)`
+- `event.json(value)`
+- `event.prettyJson(value)`
+- `event.flushGeneratedContent()`
+
+## Managed Builder Flow
+
+`editTree`, `editSkill`, and `editStartingSkill` return managed builders. These builders are queued during the event and flushed into the virtual datapack after the event posts.
+
+That means the common path is simple:
+
+1. Open or create a tree with `event.editTree(...)`.
+2. Add or edit skills through the returned tree builder.
+3. Let the event finish.
+
+You only need `flushGeneratedContent()` when you explicitly want to force the write during the same event callback.
+
+## Minimal Pattern
+
+```js
+PassiveSTJSEvents.skillTreeContent(event => {
+  var tree = event.editTree('kubejs:sample_runtime_tree')
+    .title(Text.translate('kubejs.passivestjs.sample.tree.title'))
+
+  tree.startingSkill('kubejs:sample_runtime_tree/root')
+    .title(Text.translate('kubejs.passivestjs.sample.root.title'))
+    .icon('minecraft:textures/item/nether_star.png')
+    .position(0, 0)
+
+  tree.skill('kubejs:sample_runtime_tree/water_pulse')
+    .title(Text.translate('kubejs.passivestjs.sample.water.title'))
+    .bonus('kubejs:sample_runtime_bonus', bonus => {
+      bonus.effect('minecraft:regeneration')
+      bonus.duration(40)
+    })
+    .connect('kubejs:sample_runtime_tree/root')
+})
+```
+
+The checked-in file `examples/kubejs/passivestjs/02_server_skill_tree_content.js` shows a fuller version with:
+
+- a root node
+- a custom attack listener path
+- a custom underwater tick path
+- a requirement-gated skill
+- a skill that points users toward the workbench socket flow
+
+## Replacing Upstream Content
+
+Use `event.clearDefaultTrees()` if your pack wants to remove PST's default trees after generated content is flushed.
+
+Use `event.removeTree(...)` and `event.removeSkill(...)` for targeted removals.
+
+## Raw JSON Escape Hatch
+
+The event also supports raw JSON-like writes:
+
+- `event.addSkillTree(id, overridesObject)`
+- `event.addSkill(id, overridesObject)`
+- `event.addStartingSkill(id, overridesObject)`
+- `event.addDataJson(id, value)`
+
+Use these when you already have a JSON structure and do not need the typed builder path.
+
+## Registry Access During Content Generation
+
+`event.registries()` returns the real PST registry API. Use it when you need direct access to the installed serializer families while generating content.
+
+## Related Pages
+
+- [Startup Registry Integration](../startupevents/registry)
+- [Runtime Helpers](../runtime-helpers)
+- [Examples](../examples)
+
+## 中文说明
+
+`PassiveSTJSEvents.skillTreeContent(...)` 就是这个模组最核心的内容生成入口。
+
+通常你会在这里做这些事：
+
+- 新建技能树
+- 新建起始技能
+- 编辑已有技能
+- 往技能里挂 bonus、listener、requirement
+- 删除原版树
+- 直接写额外 JSON
+
+推荐心智模型：
+
+1. `startup_scripts` 先把类型注册好。
+2. `skillTreeContent` 里只做“组装内容”。
+3. 事件结束后，PassiveSTJS 会把这些 builder 自动写进虚拟 datapack，再同步到 PST 运行时缓存。
+
+所以大多数情况下你不需要手动调用 `flushGeneratedContent()`，除非你在同一个事件回调里就想立刻看到写入结果。

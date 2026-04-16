@@ -1,0 +1,26 @@
+{
+  "en_us": {
+    "title.key": "PassiveSTJS Documentation",
+    "synopsis.key": "Synopsis: ",
+    "synopsis.note.key": "KubeJS integration for Passive Skill Tree on Forge 1.20.1",
+    "overview.key": "Overview",
+    "startup.registry.key": "Startup Registry Integration",
+    "server.content.key": "Server Content Event",
+    "runtime.helpers.key": "Runtime Helpers",
+    "recipes.key": "Workbench Recipes",
+    "config.key": "Config",
+    "examples.key": "Examples"
+  },
+  "zh_cn": {
+    "title.key": "PassiveSTJS 文档",
+    "synopsis.key": "简介：",
+    "synopsis.note.key": "适用于 Forge 1.20.1 的 Passive Skill Tree KubeJS 集成",
+    "overview.key": "总览",
+    "startup.registry.key": "Startup 注册集成",
+    "server.content.key": "服务端内容事件",
+    "runtime.helpers.key": "运行时 Helper",
+    "recipes.key": "工作台配方",
+    "config.key": "配置",
+    "examples.key": "示例"
+  }
+}

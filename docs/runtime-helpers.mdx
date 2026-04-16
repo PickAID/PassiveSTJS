@@ -1,0 +1,173 @@
+# Runtime Helpers
+
+`PassiveSkillTreeJS` is the runtime entry point exposed to scripts.
+
+Public entry methods:
+
+- `PassiveSkillTreeJS.player(player)`
+- `PassiveSkillTreeJS.skill(id)`
+- `PassiveSkillTreeJS.tree(id)`
+- `PassiveSkillTreeJS.item(stack)`
+
+## Player View
+
+`PassiveSkillTreeJS.player(player)` returns `PSTPlayerView` or `null` when the player has no PST capability.
+
+Important methods on `PSTPlayerView`:
+
+- `skillPoints()`
+- `treeReset()`
+- `grantSkillPoints(amount)`
+- `consumeSkillPoints(amount)`
+- `hasSkill(id)`
+- `learn(id)`
+- `learnWithoutSkillPointCost(id)`
+- `learnWithSkillPointCost(id, cost)`
+- `remove(id)`
+- `reset()`
+- `learnedSkillIds()`
+- `learnedSkills()`
+- `learnedSkill(id)`
+- `hasLearnedInTree(id)`
+- `learnedSkillsInTree(id)`
+- `skill(id)`
+
+`skill(id)` returns a player-bound `PSTPlayerSkillView`.
+
+## Player-Bound Skill View
+
+`PSTPlayerSkillView` is useful when you care about the current player's learned state.
+
+Important methods:
+
+- `learned()`
+- `canLearn()`
+- `learn()`
+- `remove()`
+- `requirements()`
+- `bonuses()`
+- `listeners()`
+
+Each requirement, bonus, and listener view exposes:
+
+- `typeId()`
+- `text()`
+- `node()`
+
+`node()` is only present when the object is serializer-backed by PassiveSTJS runtime types.
+
+## Read-Only Skill And Tree Views
+
+`PassiveSkillTreeJS.skill(id)` returns a read-only `PSTSkillView`.
+
+Useful `PSTSkillView` methods:
+
+- `id()`
+- `title()`
+- `titleColor()`
+- `positionX()`
+- `positionY()`
+- `tags()`
+- `directConnections()`
+- `bonusCount()`
+- `requirementCount()`
+
+`PassiveSkillTreeJS.tree(id)` returns a read-only `PSTTreeView`.
+
+Useful `PSTTreeView` methods:
+
+- `id()`
+- `skillIds()`
+- `limits()`
+- `hasSkill(id)`
+- `skill(id)`
+- `skills()`
+- `isDefaultTree()`
+
+## Item Bonus Runtime View
+
+`PassiveSkillTreeJS.item(stack)` returns `PSTItemView`.
+
+Important methods:
+
+- `bonusCount()`
+- `bonuses()`
+- `clearBonuses()`
+- `addItemBonus(typeId, consumer)`
+- `addItemBonus(builder)`
+- `addSkillBonusItemBonus(typeId, consumer)`
+- `addAttributeItemBonus(consumer)`
+- `addItemBonusList(consumer)`
+
+Each `PSTItemBonusView` exposes:
+
+- `typeId()`
+- `text()`
+- `node()`
+
+## Minimal Patterns
+
+Read player state:
+
+```js
+var playerView = PassiveSkillTreeJS.player(event.player)
+if (playerView && playerView.hasSkill('kubejs:sample_runtime_tree/water_pulse')) {
+  playerView.grantSkillPoints(1)
+}
+```
+
+Inspect player-bound requirements and listeners:
+
+```js
+var skillView = playerView ? playerView.skill('kubejs:passivestjs/runtime_threshold') : null
+if (skillView && !skillView.learned()) {
+  for (var requirement of skillView.requirements()) {
+    console.log(requirement.typeId(), requirement.passed())
+  }
+}
+```
+
+Append item bonuses directly to a live stack:
+
+```js
+var stackView = PassiveSkillTreeJS.item(event.item)
+if (stackView && stackView.bonusCount() === 0) {
+  stackView.addAttributeItemBonus(bonus => {
+    bonus.attribute('minecraft:generic.armor')
+    bonus.amount(2)
+    bonus.operation(0)
+    bonus.modifierId('8516d3f4-373e-42c3-9138-3215993b34c4')
+    bonus.bonusName('passivestjs.sample')
+  })
+}
+```
+
+These patterns are all shown in the checked-in example files:
+
+- `examples/kubejs/passivestjs/03_server_runtime_api.js`
+- `examples/kubejs/passivestjs/07_server_runtime_helper_samples.js`
+- `examples/kubejs/passivestjs/09_server_item_bonus_runtime_api.js`
+
+## 中文说明
+
+`PassiveSkillTreeJS` 负责运行时层。
+
+简单区分：
+
+- `player(...)`
+  看玩家当前学了什么、能不能学、要不要直接学、要不要重置
+- `skill(...)`
+  看技能定义本身
+- `tree(...)`
+  看技能树定义本身
+- `item(...)`
+  直接读写某个物品上的 PST item bonus
+
+这里最容易混淆的是两种 skill view：
+
+- `PassiveSkillTreeJS.skill(id)`
+  只看定义，不绑定某个玩家
+- `PassiveSkillTreeJS.player(player).skill(id)`
+  绑定玩家，可以判断 `learned()`、`canLearn()`、读 `requirements()`、`bonuses()`、`listeners()`
+
+如果你的逻辑是“这个玩家现在能不能点这个技能”，那就该走第二种。
