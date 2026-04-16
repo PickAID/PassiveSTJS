@@ -1,0 +1,9 @@
+{
+  "overview.mdx": "模组概览",
+  "startupevents": "启动事件",
+  "serverevents": "服务端事件",
+  "runtime-helpers.mdx": "运行时 Helper",
+  "recipes.mdx": "工作台配方",
+  "config.mdx": "配置",
+  "examples.mdx": "示例"
+}

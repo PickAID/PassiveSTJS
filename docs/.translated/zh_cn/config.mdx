@@ -1,0 +1,32 @@
+# 配置
+
+共享配置文件位于：
+
+`config/passivestjs-common.toml`
+
+## 可用开关
+
+## `editor.disabled`
+
+默认值：`true`
+
+这个开关会禁用 Passive Skill Tree 自带的编辑器命令和编辑器界面入口。
+
+代码注释已经说明为什么默认值比较严格：PassiveSTJS 的设计前提是脚本化或生成式内容，而上游编辑器在这类工作流里被视为不稳定入口。
+
+只有当你明确想把上游 PST 编辑器重新打开时，才把它设成 `false`。
+
+## `translation_draft_export.enabled`
+
+默认值：`false`
+
+开启后，PassiveSTJS 会把当前发现到的翻译 key 导出到：
+
+`config/passivestjs/generated_skilltree_lang/lang.json`
+
+这个草稿文件会生成空字符串值，而且会在内容重载后重复写出，所以默认关闭，避免反复覆盖你的翻译草稿。
+
+目前公开的共享配置就这两项：
+
+- `editor.disabled`
+- `translation_draft_export.enabled`

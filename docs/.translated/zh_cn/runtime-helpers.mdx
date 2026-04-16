@@ -1,8 +1,8 @@
-# Runtime Helpers
+# 运行时 Helper
 
-`PassiveSkillTreeJS` is the runtime entry point exposed to scripts.
+`PassiveSkillTreeJS` 是暴露给脚本的运行时入口。
 
-Public entry methods:
+公开入口方法：
 
 - `PassiveSkillTreeJS.player(player)`
 - `PassiveSkillTreeJS.skill(id)`
@@ -11,9 +11,9 @@ Public entry methods:
 
 ## Player View
 
-`PassiveSkillTreeJS.player(player)` returns `PSTPlayerView` or `null` when the player has no PST capability.
+`PassiveSkillTreeJS.player(player)` 会返回 `PSTPlayerView`；如果玩家没有 PST capability，就返回 `null`。
 
-Important methods on `PSTPlayerView`:
+`PSTPlayerView` 常用方法：
 
 - `skillPoints()`
 - `treeReset()`
@@ -32,13 +32,13 @@ Important methods on `PSTPlayerView`:
 - `learnedSkillsInTree(id)`
 - `skill(id)`
 
-`skill(id)` returns a player-bound `PSTPlayerSkillView`.
+`skill(id)` 会返回一个绑定玩家状态的 `PSTPlayerSkillView`。
 
-## Player-Bound Skill View
+## 玩家绑定的 Skill View
 
-`PSTPlayerSkillView` is useful when you care about the current player's learned state.
+`PSTPlayerSkillView` 适合处理“这个玩家当前是否学会、现在能不能学”这类问题。
 
-Important methods:
+常用方法：
 
 - `learned()`
 - `canLearn()`
@@ -48,19 +48,19 @@ Important methods:
 - `bonuses()`
 - `listeners()`
 
-Each requirement, bonus, and listener view exposes:
+每个 requirement、bonus 和 listener view 都会暴露：
 
 - `typeId()`
 - `text()`
 - `node()`
 
-`node()` is only present when the object is serializer-backed by PassiveSTJS runtime types.
+只有当对象背后是 PassiveSTJS 运行时 serializer 类型时，`node()` 才会存在。
 
-## Read-Only Skill And Tree Views
+## 只读的 Skill 与 Tree View
 
-`PassiveSkillTreeJS.skill(id)` returns a read-only `PSTSkillView`.
+`PassiveSkillTreeJS.skill(id)` 会返回只读的 `PSTSkillView`。
 
-Useful `PSTSkillView` methods:
+常用 `PSTSkillView` 方法：
 
 - `id()`
 - `title()`
@@ -72,9 +72,9 @@ Useful `PSTSkillView` methods:
 - `bonusCount()`
 - `requirementCount()`
 
-`PassiveSkillTreeJS.tree(id)` returns a read-only `PSTTreeView`.
+`PassiveSkillTreeJS.tree(id)` 会返回只读的 `PSTTreeView`。
 
-Useful `PSTTreeView` methods:
+常用 `PSTTreeView` 方法：
 
 - `id()`
 - `skillIds()`
@@ -86,9 +86,9 @@ Useful `PSTTreeView` methods:
 
 ## Item Bonus Runtime View
 
-`PassiveSkillTreeJS.item(stack)` returns `PSTItemView`.
+`PassiveSkillTreeJS.item(stack)` 会返回 `PSTItemView`。
 
-Important methods:
+常用方法：
 
 - `bonusCount()`
 - `bonuses()`
@@ -99,15 +99,15 @@ Important methods:
 - `addAttributeItemBonus(consumer)`
 - `addItemBonusList(consumer)`
 
-Each `PSTItemBonusView` exposes:
+每个 `PSTItemBonusView` 都会暴露：
 
 - `typeId()`
 - `text()`
 - `node()`
 
-## Minimal Patterns
+## 最小模式
 
-Read player state:
+读取玩家状态：
 
 ```js
 var playerView = PassiveSkillTreeJS.player(event.player)
@@ -116,7 +116,7 @@ if (playerView && playerView.hasSkill('kubejs:sample_runtime_tree/water_pulse'))
 }
 ```
 
-Inspect player-bound requirements and listeners:
+检查玩家绑定 skill 的 requirement 与 listener：
 
 ```js
 var skillView = playerView ? playerView.skill('kubejs:passivestjs/runtime_threshold') : null
@@ -127,7 +127,7 @@ if (skillView && !skillView.learned()) {
 }
 ```
 
-Append item bonuses directly to a live stack:
+直接把 item bonus 加到活体 `ItemStack`：
 
 ```js
 var stackView = PassiveSkillTreeJS.item(event.item)
@@ -142,8 +142,17 @@ if (stackView && stackView.bonusCount() === 0) {
 }
 ```
 
-These patterns are all shown in the checked-in example files:
+这些模式都在仓库里的样例文件中有对应写法：
 
 - `examples/kubejs/passivestjs/03_server_runtime_api.js`
 - `examples/kubejs/passivestjs/07_server_runtime_helper_samples.js`
 - `examples/kubejs/passivestjs/09_server_item_bonus_runtime_api.js`
+
+最容易混淆的是两种 skill view：
+
+- `PassiveSkillTreeJS.skill(id)`
+  只看技能定义，不绑定玩家
+- `PassiveSkillTreeJS.player(player).skill(id)`
+  绑定玩家，可以判断 `learned()`、`canLearn()`，并读取 `requirements()`、`bonuses()`、`listeners()`
+
+如果你的逻辑是“这个玩家现在能不能点这个技能”，就应该走第二种。

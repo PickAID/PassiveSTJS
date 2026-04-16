@@ -25,16 +25,3 @@ When enabled, PassiveSTJS exports discovered translation keys to:
 `config/passivestjs/generated_skilltree_lang/lang.json`
 
 The generated draft contains empty string values and is regenerated after content reload, so it is intentionally disabled by default.
-
-## 中文说明
-
-目前公开的共享配置就两项：
-
-- `editor.disabled`
-- `translation_draft_export.enabled`
-
-其中最重要的是 `editor.disabled`。
-
-默认值是 `true`，也就是默认禁用 Passive Skill Tree 自带编辑器。这不是附带行为，而是这个模组当前的正式默认策略。
-
-`translation_draft_export.enabled` 更像辅助开关。它会把当前发现到的翻译 key 导出成草稿文件，方便你后续整理语言文件，但默认不开，避免反复覆盖草稿。

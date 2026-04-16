@@ -1,0 +1,88 @@
+# 示例
+
+仓库里已经提交的参考样例位于：
+
+`examples/kubejs/passivestjs/`
+
+这些文件不会被 KubeJS 自动加载。
+
+## 文件地图
+
+`01_startup_registry_runtime.js`
+
+- 启动注册定义
+- 自定义 living condition
+- 自定义 skill bonus multiplier
+- 自定义 event listener
+- 自定义 skill bonus
+- 自定义 skill requirement
+
+`02_server_skill_tree_content.js`
+
+- 完整的 `PassiveSTJSEvents.skillTreeContent(...)` 示例
+- 树标题、根节点、普通节点、requirement 节点
+- 自定义 runtime bonus 与 listener 连接方式
+- 一个指向工作台 item-bonus 流程的技能节点
+
+`03_server_runtime_api.js`
+
+- `PassiveSkillTreeJS.player(...)`
+- `PassiveSkillTreeJS.skill(...)`
+- `PassiveSkillTreeJS.tree(...)`
+- 技能点增减
+- 学习与重置示例
+
+`05_server_requirement_listener_chain.js`
+
+- 聚焦 requirement 与 listener 联动的精简样例
+- 不需要完整 showcase tree 时直接参考这个
+
+`06_client_lang_entries.js`
+
+- `ClientEvents.lang('en_us', ...)`
+- `ClientEvents.lang('zh_cn', ...)`
+- 工作台文本
+- 装备类型翻译
+- 样例技能树标题与描述
+
+`07_server_runtime_helper_samples.js`
+
+- 玩家绑定的 `skill(...)`
+- `learned()`
+- `canLearn()`
+- requirement、bonus 与 listener 检查
+
+`08_server_workbench_item_bonus_recipe.js`
+
+- `event.recipes.skilltree.workbench_item_bonus()`
+- `baseEquipmentTypeCondition(...)`
+- `ingredientTag(...)`
+- `attributeItemBonus(...)`
+- `requiresPassiveSkill()`
+
+`09_server_item_bonus_runtime_api.js`
+
+- `PassiveSkillTreeJS.item(stack)`
+- `bonusCount()`
+- `clearBonuses()`
+- `addItemBonus(...)`
+- `addAttributeItemBonus(...)`
+
+## 推荐阅读顺序
+
+如果你第一次接触这个 addon：
+
+1. `01_startup_registry_runtime.js`
+2. `02_server_skill_tree_content.js`
+3. `06_client_lang_entries.js`
+4. `03_server_runtime_api.js`
+5. `08_server_workbench_item_bonus_recipe.js`
+6. `09_server_item_bonus_runtime_api.js`
+
+这些样例是“参考脚本”，不是自动加载脚本。
+
+推荐的使用方式是：
+
+- 先从对应文档页理解 API 角色
+- 再去 `examples/kubejs/passivestjs/` 抄最接近的片段
+- 最后把片段移动到你自己的 `startup_scripts/`、`server_scripts/` 或 `client_scripts/`

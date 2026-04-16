@@ -1,0 +1,96 @@
+# 工作台配方
+
+`PassiveSTJS` 通过下面这个入口暴露 PST 的工作台 socket 配方：
+
+```js
+event.recipes.skilltree.workbench_item_bonus()
+```
+
+这个 API 应该放在 `kubejs/server_scripts/`。
+
+## 必填部分
+
+这个配方包装器要求必须提供：
+
+- `base_item_condition`
+- `item_bonus`
+
+缺任何一个，配方创建时都会直接抛错。
+
+`requires_passive_skill` 默认值是 `false`。
+
+## Base Item Condition Helper
+
+可以通过这些方法定义基础物品条件：
+
+- `baseItemCondition(typeId, consumer)`
+- `baseItemConditionSchema(typeId, consumer)`
+- `noBaseCondition()`
+- `baseEquipmentTypeCondition(equipmentType)`
+- `baseItemIdCondition(itemId)`
+- `baseTagCondition(tagId)`
+- `basePotionCondition(potionId)`
+- `baseFoodCondition()`
+- `baseEnchantedCondition()`
+
+## Item Bonus Helper
+
+可以通过这些方法定义生成出来的 item bonus：
+
+- `itemBonus(typeId, consumer)`
+- `itemBonusSchema(typeId, consumer)`
+- `skillBonusItemBonus(typeId, consumer)`
+- `skillBonusItemBonusSchema(typeId, consumer)`
+- `attributeItemBonus(consumer)`
+- `itemBonusList(consumer)`
+
+## 材料 Helper
+
+支持的材料写法：
+
+- `ingredient(inputItem, amount)`
+- `ingredient(inputItem)`
+- `ingredientItem(itemId, amount)`
+- `ingredientItem(itemId)`
+- `ingredientTag(tagId, amount)`
+- `ingredientTag(tagId)`
+
+## 最小示例
+
+```js
+ServerEvents.recipes(event => {
+  event.recipes.skilltree.workbench_item_bonus()
+    .baseEquipmentTypeCondition('shield')
+    .ingredientTag('forge:ingots/copper', 2)
+    .attributeItemBonus(bonus => {
+      bonus.attribute('minecraft:generic.armor')
+      bonus.amount(2)
+      bonus.modifierId('8516d3f4-373e-42c3-9138-3215993b34c4')
+      bonus.bonusName('Workbench Upgrade')
+      bonus.operation(0)
+    })
+    .requiresPassiveSkill()
+    .id('kubejs:passivestjs_showcase_shield_socket')
+})
+```
+
+这和仓库里的 `examples/kubejs/passivestjs/08_server_workbench_item_bonus_recipe.js` 一致。
+
+## 什么时候用工作台配方，什么时候直接改物品
+
+适合用工作台配方的情况：
+
+- bonus 应该走 PST 原生工作台流程
+- bonus 需要表现成 socket 或 upgrade 配方
+- bonus 是否要求学会被动技能需要受 `requires_passive_skill` 控制
+
+适合用 `PassiveSkillTreeJS.item(stack)` 的情况：
+
+- 物品 bonus 需要在工作台以外的运行时场景增减
+- 来源是自定义事件、命令、物品使用或其他运行时触发
+
+## Passive Skill Requirement 开关
+
+`.requiresPassiveSkill()` 会把 `requires_passive_skill` 设为 `true`。
+
+它只控制工作台操作是否被要求拥有对应被动技能，不负责定义 socket 容量怎么获得，也不负责哪个技能提供相关 bonus。那些逻辑依然来自你的 PST 内容与上游 PST 系统。

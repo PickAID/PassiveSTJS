@@ -94,25 +94,3 @@ Use `PassiveSkillTreeJS.item(stack)` when:
 `.requiresPassiveSkill()` sets `requires_passive_skill=true`.
 
 This only gates the workbench action. It does not define how the player gains socket capacity or which skill grants the relevant bonus. That still comes from your PST content and the upstream PST systems.
-
-## 中文说明
-
-这一页只讲工作台 recipe，不讲运行时直接给物品挂 bonus。
-
-你可以把两条路分开理解：
-
-- `event.recipes.skilltree.workbench_item_bonus()`
-  走 PST 原生工作台流程
-- `PassiveSkillTreeJS.item(stack)`
-  直接在运行时操作物品上的 item bonus
-
-这套 RecipeJS 包装器本身就是链式 API，核心就是先定：
-
-1. 这个配方能作用到什么物品上
-   `base...Condition(...)`
-2. 这个配方会往物品里塞什么 item bonus
-   `itemBonus(...)` 或内建 helper
-3. 需要什么材料
-   `ingredient...(...)`
-4. 是否要求玩家真的学过相关被动技能
-   `requiresPassiveSkill(...)`

@@ -1,0 +1,79 @@
+# 启动注册集成
+
+当你要注册带 serializer 的 PST 类型时，在 `kubejs/startup_scripts/` 里使用 `StartupEvents.registry('skilltree:...')`。
+
+支持的注册表 id：
+
+- `skilltree:skill_bonuses`
+- `skilltree:skill_bonus_multipliers`
+- `skilltree:living_conditions`
+- `skilltree:damage_conditions`
+- `skilltree:item_conditions`
+- `skilltree:enchantment_conditions`
+- `skilltree:event_listeners`
+- `skilltree:numeric_value_providers`
+- `skilltree:skill_requirements`
+- `skilltree:item_bonuses`
+
+## 已提交样例覆盖了什么
+
+`examples/kubejs/passivestjs/01_startup_registry_runtime.js` 展示了这些家族的标准写法：
+
+- `living_conditions`
+  `.prefix(...)`、`.schema(...)`、`.test(...)`
+- `skill_bonus_multipliers`
+  `.value(...)`
+- `event_listeners`
+  `.prefix(...)`、`.schema(...)`、`.onAttack(...)`、`.onTick(...)`
+- `skill_bonuses`
+  `.effect(...)`、`.schema(...)`、`.onApply(...)`
+- `skill_requirements`
+  `.requirementText(...)`、`.schema(...)`、`.test(...)`
+
+这个样例也展示了 schema 字段如何处理 enum、int、double、resource-location 与 node target。
+
+## 最小示例
+
+```js
+var PSTSchemaFieldKind = Java.loadClass('com.pickaid.passivestjs.schema.PSTSchemaFieldKind')
+
+StartupEvents.registry('skilltree:living_conditions', event => {
+  event.create('kubejs:sample_combat_state')
+    .prefix(context => Text.translate('living_condition.kubejs.sample_combat_state.crouching'))
+    .schema(schema => {
+      schema.field('state', field => field.kind(PSTSchemaFieldKind.ENUM)
+        .required()
+        .enumChoice('crouching')
+        .enumChoice('underwater'))
+    })
+    .test(context => {
+      var entity = context.entity()
+      return entity != null && entity.isCrouching()
+    })
+})
+```
+
+## 注册定义通常怎么用
+
+标准流程通常是：
+
+1. 在 `startup_scripts/` 里注册一个自定义 serializer 类型
+2. 在 `PassiveSTJSEvents.skillTreeContent(...)` 里引用这个类型
+3. 在 `client_scripts/` 里补上对应翻译
+
+例如，自定义 event listener 可以被自定义 skill bonus 引用，然后那个 bonus 再挂到内容事件生成的技能上。
+
+## Schema 说明
+
+样例中的 startup 注册使用 schema 字段同时驱动校验和作者写法：
+
+- `int`、`double`、`resource_location` 这类标量字段
+- 显式给出选择项的 enum 字段
+- 指向特定 PST 家族的 node 字段，比如 `EVENT_LISTENER`、`LIVING_CONDITION`、`MULTIPLIER`
+
+这也是为什么后面的 `skillTreeContent` 样例能自然地链式嵌套 builder。
+
+## 相关页面
+
+- [服务端内容事件](../serverevents/content)
+- [示例](../examples)

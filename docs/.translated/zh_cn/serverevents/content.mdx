@@ -1,0 +1,96 @@
+# 技能树内容事件
+
+`PassiveSTJSEvents.skillTreeContent(event => { ... })` 是服务端生成 PST 内容的主入口。
+
+它应该放在 `kubejs/server_scripts/`。
+
+## 事件暴露的能力
+
+源码支持的公开方法包括：
+
+- `event.registries()`
+- `event.editTree(id)`
+- `event.editSkill(id)`
+- `event.editStartingSkill(id)`
+- `event.addSkillTree(id, overridesOrBuilder)`
+- `event.addSkill(id, overridesOrBuilder)`
+- `event.addStartingSkill(id, overridesOrBuilder)`
+- `event.removeTree(id)`
+- `event.removeSkill(id)`
+- `event.disableTree(id)`
+- `event.disableSkill(id)`
+- `event.clearDefaultTree()`
+- `event.clearDefaultTrees()`
+- `event.addDataJson(id, value)`
+- `event.json(value)`
+- `event.prettyJson(value)`
+- `event.flushGeneratedContent()`
+
+## Managed Builder 流程
+
+`editTree`、`editSkill` 与 `editStartingSkill` 返回的都是 managed builder。它们会在事件期间排队，等事件结束后统一刷新进虚拟 datapack。
+
+所以常见流程很简单：
+
+1. 用 `event.editTree(...)` 打开或创建一棵树
+2. 通过返回的 tree builder 添加或修改技能
+3. 让事件自然结束
+
+只有你明确想在同一个事件回调里强制落盘时，才需要自己调用 `flushGeneratedContent()`。
+
+## 最小示例
+
+```js
+PassiveSTJSEvents.skillTreeContent(event => {
+  var tree = event.editTree('kubejs:sample_runtime_tree')
+    .title(Text.translate('kubejs.passivestjs.sample.tree.title'))
+
+  tree.startingSkill('kubejs:sample_runtime_tree/root')
+    .title(Text.translate('kubejs.passivestjs.sample.root.title'))
+    .icon('minecraft:textures/item/nether_star.png')
+    .position(0, 0)
+
+  tree.skill('kubejs:sample_runtime_tree/water_pulse')
+    .title(Text.translate('kubejs.passivestjs.sample.water.title'))
+    .bonus('kubejs:sample_runtime_bonus', bonus => {
+      bonus.effect('minecraft:regeneration')
+      bonus.duration(40)
+    })
+    .connect('kubejs:sample_runtime_tree/root')
+})
+```
+
+仓库里的 `examples/kubejs/passivestjs/02_server_skill_tree_content.js` 展示了更完整的版本，其中包括：
+
+- 根节点
+- 自定义 attack listener 路径
+- 自定义 underwater tick 路径
+- requirement 限制技能
+- 指向工作台 socket 流程的技能节点
+
+## 替换上游内容
+
+如果整合包希望在生成内容落盘后移除 PST 默认树，可以使用 `event.clearDefaultTrees()`。
+
+如果只想定点删除，用 `event.removeTree(...)` 和 `event.removeSkill(...)`。
+
+## Raw JSON 逃生口
+
+事件也支持直接写近似 JSON 的对象：
+
+- `event.addSkillTree(id, overridesObject)`
+- `event.addSkill(id, overridesObject)`
+- `event.addStartingSkill(id, overridesObject)`
+- `event.addDataJson(id, value)`
+
+当你手上已经有完整 JSON 结构、不需要 typed builder 时，就走这条路。
+
+## 内容生成时访问注册表
+
+`event.registries()` 会返回真实 PST 注册表 API。生成内容时如果需要直接访问已安装的 serializer 家族，就用它。
+
+## 相关页面
+
+- [启动注册集成](../startupevents/registry)
+- [运行时 Helper](../runtime-helpers)
+- [示例](../examples)

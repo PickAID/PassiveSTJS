@@ -1,0 +1,82 @@
+# PassiveSTJS 概览
+
+`PassiveSTJS` 是一个面向 Forge `1.20.1` 的 Passive Skill Tree KubeJS 附属模组。
+
+它主要暴露四层脚本能力：
+
+1. `StartupEvents.registry('skilltree:...')` 用来注册带 serializer 的 PST 类型。
+2. `PassiveSTJSEvents.skillTreeContent(...)` 用来生成和修改技能树内容。
+3. `PassiveSkillTreeJS` 绑定用来读写运行时玩家、技能树、技能与物品状态。
+4. `event.recipes.skilltree.workbench_item_bonus()` 用来编写 PST 工作台 socket 配方。
+
+## 脚本位置
+
+不同能力要放在正确的 KubeJS 目录里：
+
+- `kubejs/startup_scripts/`
+  用于 `StartupEvents.registry('skilltree:...')`
+- `kubejs/server_scripts/`
+  用于 `PassiveSTJSEvents.skillTreeContent(...)`、运行时 helper 和 recipe 注册
+- `kubejs/client_scripts/`
+  用于 `ClientEvents.lang(...)`，提供标题、描述、tooltip 片段与工作台文本
+
+## 主要入口
+
+公开事件与绑定入口包括：
+
+- `PassiveSTJSEvents.skillTreeContent(event => { ... })`
+- `PassiveSkillTreeJS.player(player)`
+- `PassiveSkillTreeJS.skill(id)`
+- `PassiveSkillTreeJS.tree(id)`
+- `PassiveSkillTreeJS.item(stack)`
+
+内容事件会把生成的数据写进 KubeJS 的虚拟 datapack，并在事件结束后同步到 PST 运行时缓存。
+
+## 启动注册家族
+
+`PassiveSTJS` 为这些 PST serializer 家族安装了 `StartupEvents.registry(...)` 支持：
+
+- `skilltree:skill_bonuses`
+- `skilltree:skill_bonus_multipliers`
+- `skilltree:living_conditions`
+- `skilltree:damage_conditions`
+- `skilltree:item_conditions`
+- `skilltree:enchantment_conditions`
+- `skilltree:event_listeners`
+- `skilltree:numeric_value_providers`
+- `skilltree:skill_requirements`
+- `skilltree:item_bonuses`
+
+在 `skillTreeContent` 里，`event.registries()` 会暴露同一套真实 PST 注册表视图。
+
+## 类型化编写
+
+这个模组为脚本和配方里常用的 PST 路径提供了 typed id 与 enum。仓库里的示例也按这套风格编写：
+
+- typed tree 与 skill id
+- bonus、listener、requirement、condition、item bonus 的 typed registry id
+- equipment type、texture、frame type、logic enum、effect id、attribute id、item id、tag id、potion id
+
+只要 Probe 或生成类型可用，这就是推荐的作者写法。
+
+## 文档地图
+
+- [启动注册集成](./startupevents/registry)
+  说明如何注册带 serializer 的 PST 自定义类型
+- [服务端内容事件](./serverevents/content)
+  说明如何增删改技能树与技能
+- [运行时 Helper](./runtime-helpers)
+  说明如何在运行时操作玩家、技能树、技能与物品 helper
+- [工作台配方](./recipes)
+  说明如何通过 RecipeJS 编写 `skilltree:workbench_item_bonus`
+- [配置](./config)
+  说明 `passivestjs-common.toml` 的公开开关
+- [示例](./examples)
+  说明仓库里每个样例文件分别覆盖哪一块 API
+
+## 版本说明
+
+- Minecraft：`1.20.1`
+- Forge：`47.4.18`
+- KubeJS：`2001.6.5-build.22`
+- 共享配置：`config/passivestjs-common.toml`
