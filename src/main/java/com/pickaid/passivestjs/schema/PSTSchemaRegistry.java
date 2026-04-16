@@ -2,6 +2,7 @@ package com.pickaid.passivestjs.schema;
 
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,6 +28,10 @@ public final class PSTSchemaRegistry {
 
     public static synchronized Optional<PSTSchema> find(PSTNodeFamily family, ResourceLocation id) {
         return Optional.ofNullable(BY_FAMILY.get(family).get(id));
+    }
+
+    public static synchronized Map<ResourceLocation, PSTSchema> all(PSTNodeFamily family) {
+        return Collections.unmodifiableMap(new LinkedHashMap<>(BY_FAMILY.get(family)));
     }
 
     public static synchronized void clear() {

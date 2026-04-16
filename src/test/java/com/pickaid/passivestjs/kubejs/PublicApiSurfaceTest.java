@@ -29,6 +29,7 @@ import dev.latvian.mods.kubejs.typings.Info;
 import dev.latvian.mods.rhino.util.HideFromJS;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
@@ -50,17 +51,19 @@ class PublicApiSurfaceTest {
         Set<String> visibleMethodNames = visibleMethodNames(Bindings.class);
         Set<String> declaredPublicMethodNames = declaredPublicMethodNames(Bindings.class);
 
-        assertEquals(Set.of("player", "skill", "tree"), visibleMethodNames);
-        assertEquals(Set.of("player", "skill", "tree"), declaredPublicMethodNames);
+        assertEquals(Set.of("player", "skill", "tree", "item"), visibleMethodNames);
+        assertEquals(Set.of("player", "skill", "tree", "item"), declaredPublicMethodNames);
         assertInfo(Bindings.class.getDeclaredMethod("player", net.minecraft.world.entity.player.Player.class));
         assertInfo(Bindings.class.getDeclaredMethod("skill", PSTSkillId.class));
         assertInfo(Bindings.class.getDeclaredMethod("tree", PSTTreeId.class));
+        assertInfo(Bindings.class.getDeclaredMethod("item", ItemStack.class));
     }
 
     @Test
     void publicApisUseTypedSkillAndTreeIdsInsteadOfBareResourceLocations() throws Exception {
         assertNotNull(Bindings.class.getDeclaredMethod("skill", PSTSkillId.class));
         assertNotNull(Bindings.class.getDeclaredMethod("tree", PSTTreeId.class));
+        assertNotNull(Bindings.class.getDeclaredMethod("item", ItemStack.class));
         assertNotNull(PSTPlayerView.class.getDeclaredMethod("hasSkill", PSTSkillId.class));
         assertNotNull(PSTPlayerView.class.getDeclaredMethod("learn", PSTSkillId.class));
         assertNotNull(PSTPlayerView.class.getDeclaredMethod("learnWithoutSkillPointCost", PSTSkillId.class));
@@ -158,10 +161,14 @@ class PublicApiSurfaceTest {
         Class<?> bonusView = Class.forName("com.pickaid.passivestjs.kubejs.runtime.PSTBonusView");
         Class<?> listenerView = Class.forName("com.pickaid.passivestjs.kubejs.runtime.PSTListenerView");
         Class<?> requirementView = Class.forName("com.pickaid.passivestjs.kubejs.runtime.PSTRequirementView");
+        Class<?> itemView = Class.forName("com.pickaid.passivestjs.kubejs.runtime.PSTItemView");
+        Class<?> itemBonusView = Class.forName("com.pickaid.passivestjs.kubejs.runtime.PSTItemBonusView");
         Class<?> runtimeNode = Class.forName("com.pickaid.passivestjs.runtime.PSTRuntimeNode");
 
         Method skillMethod = playerView.getDeclaredMethod("skill", PSTSkillId.class);
         assertEquals(playerSkillView, skillMethod.getReturnType());
+        Method itemMethod = Bindings.class.getDeclaredMethod("item", ItemStack.class);
+        assertEquals(itemView, itemMethod.getReturnType());
 
         assertPublicReturn(playerSkillView.getDeclaredMethod("learned"), boolean.class);
         assertPublicReturn(playerSkillView.getDeclaredMethod("canLearn"), boolean.class);
@@ -179,6 +186,17 @@ class PublicApiSurfaceTest {
 
         assertEquals(Component.class, requirementView.getDeclaredMethod("text").getReturnType());
         assertEquals(runtimeNode, requirementView.getDeclaredMethod("node").getReturnType());
+
+        assertPublicReturn(itemView.getDeclaredMethod("bonusCount"), int.class);
+        assertEquals(List.class, itemView.getDeclaredMethod("bonuses").getReturnType());
+        assertPublicReturn(itemView.getDeclaredMethod("clearBonuses"), int.class);
+        assertEquals(itemView, itemView.getDeclaredMethod("addItemBonus", com.pickaid.passivestjs.kubejs.id.PSTItemBonusId.class, java.util.function.Consumer.class).getReturnType());
+        assertEquals(itemView, itemView.getDeclaredMethod("addSkillBonusItemBonus", com.pickaid.passivestjs.kubejs.id.PSTSkillBonusId.class, java.util.function.Consumer.class).getReturnType());
+        assertEquals(itemView, itemView.getDeclaredMethod("addAttributeItemBonus", java.util.function.Consumer.class).getReturnType());
+        assertEquals(itemView, itemView.getDeclaredMethod("addItemBonusList", java.util.function.Consumer.class).getReturnType());
+
+        assertEquals(Component.class, itemBonusView.getDeclaredMethod("text").getReturnType());
+        assertEquals(runtimeNode, itemBonusView.getDeclaredMethod("node").getReturnType());
     }
 
     @Test

@@ -1,6 +1,5 @@
 package com.pickaid.passivestjs.runtime;
 
-import com.mojang.logging.LogUtils;
 import daripher.skilltree.skill.PassiveSkill;
 import daripher.skilltree.skill.bonus.EventListenerBonus;
 import daripher.skilltree.skill.bonus.SkillBonusHandler;
@@ -16,13 +15,10 @@ import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.ShieldBlockEvent;
 import net.minecraftforge.event.entity.player.CriticalHitEvent;
-import org.slf4j.Logger;
 
 import java.util.List;
 
 public final class PSTEventListenerRuntimeBridge {
-    private static final Logger LOGGER = LogUtils.getLogger();
-
     private PSTEventListenerRuntimeBridge() {
     }
 
@@ -71,14 +67,6 @@ public final class PSTEventListenerRuntimeBridge {
         PSTCustomRuntimeEventListener listener = runtimeListener(bonus);
         if (listener == null) {
             return;
-        }
-        if (player.tickCount % 20 == 0) {
-            LOGGER.info(
-                    "[PassiveSTJS Runtime Debug] listenerPayload player={} bonusType={} payload={}",
-                    player.getScoreboardName(),
-                    bonus.getClass().getName(),
-                    listener.node().payload()
-            );
         }
         listener.onTick(new PSTCustomRuntimeContexts.TickListenerContext(node(listener), bonus, player));
     }
@@ -193,32 +181,7 @@ public final class PSTEventListenerRuntimeBridge {
         }
 
         List<EventListenerBonus> bonuses = SkillBonusHandler.getMergedSkillBonuses(player, EventListenerBonus.class);
-        if (player.tickCount % 20 == 0) {
-            LOGGER.info(
-                    "[PassiveSTJS Runtime Debug] tick player={} tickCount={} bonusCount={} bonusTypes={}",
-                    player.getScoreboardName(),
-                    player.tickCount,
-                    bonuses.size(),
-                    bonuses.stream()
-                            .map(bonus -> {
-                                String listenerType = bonus.getEventListener() == null
-                                        ? "<null>"
-                                        : bonus.getEventListener().getClass().getName();
-                                return bonus.getClass().getName() + " listener=" + listenerType;
-                            })
-                            .toList()
-            );
-        }
-
         for (EventListenerBonus bonus : bonuses) {
-            if (player.tickCount % 20 == 0) {
-                LOGGER.info(
-                        "[PassiveSTJS Runtime Debug] dispatchTick player={} bonusType={} listenerType={}",
-                        player.getScoreboardName(),
-                        bonus.getClass().getName(),
-                        bonus.getEventListener() == null ? "<null>" : bonus.getEventListener().getClass().getName()
-                );
-            }
             dispatchTick(bonus, player);
         }
     }

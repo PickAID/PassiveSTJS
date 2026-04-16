@@ -1,7 +1,23 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net' }
+        mavenCentral()
+        maven {
+            name = 'sponge'
+            url = 'https://repo.spongepowered.org/maven'
+        }
+    }
+    dependencies {
+        classpath 'org.spongepowered:mixingradle:0.7.+'
+    }
+}
+
 plugins {
     id 'net.neoforged.gradle' version '6.0.21'
     id 'org.parchmentmc.librarian.forgegradle' version '1.2.0'
 }
+
+apply plugin: 'org.spongepowered.mixin'
 
 def props = new Properties()
 file("build.txt").withInputStream(props.&load)
@@ -14,12 +30,54 @@ base {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
+mixin {
+    add sourceSets.main, "mixins.${props["mod_id"]}.refmap.json"
+    config "mixins.${props["mod_id"]}.json"
+}
+
+def mainBootstrapClasspath = {
+    def output = sourceSets.main.output
+    def paths = new LinkedHashSet<String>()
+    if (output.resourcesDir != null) {
+        paths.add(output.resourcesDir.absolutePath)
+    }
+    return paths.join(File.pathSeparator)
+}
+
+def configureCommonRun = { runConfig, String workingDirectory ->
+    runConfig.workingDirectory project.file(workingDirectory)
+    runConfig.property 'forge.logging.console.level', 'debug'
+    runConfig.property 'forge.enabledGameTestNamespaces', props["mod_id"]
+    runConfig.property 'mixin.env.remapRefMap', 'true'
+    runConfig.property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+    runConfig.lazyToken 'minecraft_classpath', mainBootstrapClasspath
+    runConfig.mods {
+        "${props["mod_id"]}" {
+            source sourceSets.main
+        }
+    }
+}
+
 minecraft {
     mappings channel: 'parchment', version: '2023.09.03-1.20.1'
+    copyIdeResources = true
+    runs {
+        client {
+            configureCommonRun(delegate, 'run/client')
+        }
+
+        server {
+            configureCommonRun(delegate, 'run/server')
+        }
+    }
 }
 
 repositories {
     maven { url = "https://maven.minecraftforge.net" }
+    maven {
+        name = "Sponge"
+        url = "https://repo.spongepowered.org/maven"
+    }
     maven {
         name = "Latvian"
         url = "https://maven.latvian.dev/releases"
@@ -31,6 +89,9 @@ repositories {
         content { includeGroup "dev.architectury" }
     }
     maven {
+        url = "https://maven.theillusivec4.top/"
+    }
+    maven {
         name = "CurseMaven"
         url = "https://cursemaven.com"
         content { includeGroup "curse.maven" }
@@ -38,18 +99,73 @@ repositories {
     mavenCentral()
 }
 
-def passiveIntegrationClassesDir = file("../PassiveSkillTreeIntegration/build/classes/java/main")
+def resolvePassiveSkillTreeJar(String mcVersion) {
+    def passiveSkillTreeJarName = "PassiveSkillTree-1.20.1-BETA-0.7.4-all.jar"
+    def explicitJar = providers.gradleProperty("passiveSkillTreeJar").orNull ?: System.getenv("PASSIVE_SKILL_TREE_JAR")
+    if (explicitJar) {
+        def resolved = file(explicitJar)
+        if (resolved.isFile()) {
+            return resolved
+        }
+        throw new GradleException("Configured PassiveSkillTree jar does not exist: ${resolved}")
+    }
+
+    def candidates = [
+            file(passiveSkillTreeJarName),
+            file("libs/${passiveSkillTreeJarName}"),
+            file("libraries/${mcVersion}/all/${passiveSkillTreeJarName}"),
+            file("../${passiveSkillTreeJarName}"),
+            file("../libs/${passiveSkillTreeJarName}"),
+            file("../libraries/${mcVersion}/all/${passiveSkillTreeJarName}"),
+            file("../PassiveSkillTree/build/libs/${passiveSkillTreeJarName}")
+    ]
+
+    def resolved = candidates.find { it.isFile() }
+    if (resolved != null) {
+        return resolved
+    }
+
+    return null
+}
+
+def passiveSkillTreeJar = resolvePassiveSkillTreeJar(props["mc_version"].toString())
+def probeJsLegacyVersion = providers.gradleProperty("probejsLegacyVersion").orNull ?: props["probejs_legacy_version"]
+def passiveSkillTreeCurseFileId = "7897205"
+def passiveSkillTreeJarVersion = passiveSkillTreeJar != null ? passiveSkillTreeJar.name.substring("PassiveSkillTree-".length(), passiveSkillTreeJar.name.length() - ".jar".length()) : null
+def passiveSkillTreeDependency = passiveSkillTreeJar != null
+        ? "local.passiveskilltree:PassiveSkillTree:${passiveSkillTreeJarVersion}"
+        : "curse.maven:passive-skill-tree-850298:${passiveSkillTreeCurseFileId}"
+
+if (passiveSkillTreeJar != null) {
+    println("PassiveSkillTree jar: ${passiveSkillTreeJar.absolutePath}")
+} else {
+    println("PassiveSkillTree dependency: curse.maven:passive-skill-tree-850298:${passiveSkillTreeCurseFileId} (fallback, local ${"PassiveSkillTree-1.20.1-BETA-0.7.4-all.jar"} not found)")
+}
+
+if (passiveSkillTreeJar != null) {
+    repositories {
+        flatDir {
+            dirs passiveSkillTreeJar.parentFile
+        }
+    }
+}
 
 dependencies {
     minecraft "net.minecraftforge:forge:${props["mc_version"]}-${props["forge_version"]}"
     implementation fg.deobf("dev.latvian.mods:kubejs-forge:${props["kubejs_version"]}")
     implementation fg.deobf("dev.latvian.mods:rhino-forge:${props["rhino_version"]}")
     implementation fg.deobf("dev.architectury:architectury-forge:${props["architectury_version"]}")
-    implementation fg.deobf("curse.maven:passive-skill-tree-850298:7264152")
-    compileOnly files(passiveIntegrationClassesDir)
-    testImplementation files(passiveIntegrationClassesDir)
+    implementation fg.deobf(passiveSkillTreeDependency)
+    compileOnly fg.deobf("curse.maven:probejs-legacy-956446:${probeJsLegacyVersion}")
+    runtimeOnly fg.deobf("curse.maven:probejs-legacy-956446:${probeJsLegacyVersion}")
+    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${props["curios_version"]}")
+    runtimeOnly fg.deobf("curse.maven:attributefix-280510:7612291")
+    runtimeOnly fg.deobf("curse.maven:mmmmmmmmmmmm-225738:4602101")
+    runtimeOnly fg.deobf("curse.maven:selene-499980:7664875")
+    testImplementation fg.deobf("curse.maven:probejs-legacy-956446:${probeJsLegacyVersion}")
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.2"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.2"
+    annotationProcessor "org.spongepowered:mixin:0.8.7:processor"
 }
 
 jar {
@@ -57,7 +173,8 @@ jar {
         attributes([
                 "Implementation-Title"   : project.name,
                 "Implementation-Version" : archiveVersion,
-                "Implementation-Vendor"  : props["mod_authors"]
+                "Implementation-Vendor"  : props["mod_authors"],
+                "MixinConfigs"           : "mixins.${props["mod_id"]}.json"
         ])
     }
 }

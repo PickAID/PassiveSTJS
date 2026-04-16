@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.pickaid.passivestjs.compat.skilltree.PSTContentTitles;
+import com.pickaid.passivestjs.skilltree.PSTContentTitles;
 import com.pickaid.passivestjs.kubejs.content.JsonHelper;
 import com.pickaid.passivestjs.kubejs.id.PSTSkillBonusId;
 import com.pickaid.passivestjs.kubejs.id.PSTSkillId;

@@ -1,7 +1,7 @@
 package com.pickaid.passivestjs.kubejs.content;
 
 import com.google.gson.JsonObject;
-import com.pickaid.passivestjs.compat.skilltree.PSTContentTitles;
+import com.pickaid.passivestjs.skilltree.PSTContentTitles;
 import com.pickaid.passivestjs.kubejs.builder.Ids;
 import com.pickaid.passivestjs.kubejs.builder.SkillBuilder;
 import com.pickaid.passivestjs.kubejs.builder.SkillTreeBuilder;

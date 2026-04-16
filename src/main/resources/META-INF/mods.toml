@@ -7,6 +7,7 @@ modId="passivestjs"
 version="${file.jarVersion}"
 displayName="PassiveSTJS"
 authors="CrychicTeam-M1hono"
+logoFile="icon.png"
 description='''Passive Skill Tree JS bridge mod.'''
 
 [[dependencies.passivestjs]]

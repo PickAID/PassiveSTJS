@@ -1,15 +1,21 @@
 package com.pickaid.passivestjs.kubejs.content;
 
 import com.google.gson.JsonObject;
+import com.pickaid.passivestjs.skilltree.PSTContentTitles;
 import daripher.skilltree.data.reloader.SkillTreesReloader;
 import daripher.skilltree.data.reloader.SkillsReloader;
 import daripher.skilltree.skill.PassiveSkill;
 import daripher.skilltree.skill.PassiveSkillTree;
 import dev.latvian.mods.kubejs.script.data.DataPackEventJS;
+import dev.latvian.mods.kubejs.typings.Info;
+import dev.latvian.mods.kubejs.typings.Param;
+import dev.latvian.mods.rhino.util.HideFromJS;
 import net.minecraft.resources.ResourceLocation;
 import com.pickaid.passivestjs.kubejs.builder.Ids;
 import com.pickaid.passivestjs.kubejs.builder.SkillBuilder;
 import com.pickaid.passivestjs.kubejs.builder.SkillTreeBuilder;
+
+import java.util.function.Consumer;
 
 public final class Skills {
     public static final Skills INSTANCE = new Skills();
@@ -56,22 +62,64 @@ public final class Skills {
         return createTree(id).toJson();
     }
 
+    @HideFromJS
     public void addSkill(DataPackEventJS event, String id, Object overrides) {
         ResourceLocation skillId = parseId(id);
         JsonObject json = buildSkillJson(skillId, overrides);
         event.addJson(toSkillResource(skillId), json);
     }
 
+    @Info(value = "Writes a loose skill JSON file by configuring a typed skill builder.", params = {
+            @Param(name = "event", value = "The datapack event receiving the JSON."),
+            @Param(name = "id", value = "The skill resource location string."),
+            @Param(name = "consumer", value = "The callback that configures the created skill builder.")
+    })
+    public void addSkill(DataPackEventJS event, String id, Consumer<SkillBuilder> consumer) {
+        SkillBuilder skill = createSkill(id);
+        if (consumer != null) {
+            consumer.accept(skill);
+        }
+        writeSkill(event, skill);
+    }
+
+    @HideFromJS
     public void addStartingSkill(DataPackEventJS event, String id, Object overrides) {
         ResourceLocation skillId = parseId(id);
         JsonObject json = buildStartingSkillJson(skillId, overrides);
         event.addJson(toSkillResource(skillId), json);
     }
 
+    @Info(value = "Writes a starting skill JSON file by configuring a typed skill builder.", params = {
+            @Param(name = "event", value = "The datapack event receiving the JSON."),
+            @Param(name = "id", value = "The skill resource location string."),
+            @Param(name = "consumer", value = "The callback that configures the created starting skill builder.")
+    })
+    public void addStartingSkill(DataPackEventJS event, String id, Consumer<SkillBuilder> consumer) {
+        SkillBuilder skill = createStartingSkill(id);
+        if (consumer != null) {
+            consumer.accept(skill);
+        }
+        writeSkill(event, skill);
+    }
+
+    @HideFromJS
     public void addSkillTree(DataPackEventJS event, String id, Object overrides) {
         ResourceLocation treeId = parseId(id);
         JsonObject json = buildSkillTreeJson(treeId, overrides);
         event.addJson(toSkillTreeResource(treeId), json);
+    }
+
+    @Info(value = "Writes a skill tree JSON file by configuring a typed skill tree builder.", params = {
+            @Param(name = "event", value = "The datapack event receiving the JSON."),
+            @Param(name = "id", value = "The skill tree resource location string."),
+            @Param(name = "consumer", value = "The callback that configures the created skill tree builder.")
+    })
+    public void addSkillTree(DataPackEventJS event, String id, Consumer<SkillTreeBuilder> consumer) {
+        SkillTreeBuilder tree = createTree(id);
+        if (consumer != null) {
+            consumer.accept(tree);
+        }
+        writeTree(event, tree);
     }
 
     public void writeSkill(DataPackEventJS event, SkillBuilder skill) {
@@ -108,19 +156,23 @@ public final class Skills {
     public void applyRuntimeSkill(JsonObject json) {
         PassiveSkill skill = deserializeSkill(json);
         SkillsReloader.getSkills().put(skill.getId(), skill);
+        PSTContentTitles.captureSkillTitle(skill.getId(), json);
     }
 
     public void applyRuntimeTree(JsonObject json) {
         PassiveSkillTree tree = deserializeTree(json);
         SkillTreesReloader.getSkillTrees().put(tree.getId(), tree);
+        PSTContentTitles.captureTreeTitle(tree.getId(), json);
     }
 
     public void removeRuntimeSkill(ResourceLocation id) {
         SkillsReloader.getSkills().remove(id);
+        PSTContentTitles.putSkillTitle(id, null);
     }
 
     public void removeRuntimeTree(ResourceLocation id) {
         SkillTreesReloader.getSkillTrees().remove(id);
+        PSTContentTitles.putTreeTitle(id, null);
     }
 
     public static ResourceLocation skillResource(ResourceLocation id) {
@@ -206,10 +258,10 @@ public final class Skills {
     }
 
     static ResourceLocation toSkillResource(ResourceLocation id) {
-        return new ResourceLocation(id.getNamespace(), "skills/" + id.getPath());
+        return ResourceLocation.fromNamespaceAndPath(id.getNamespace(), "skills/" + id.getPath());
     }
 
     static ResourceLocation toSkillTreeResource(ResourceLocation id) {
-        return new ResourceLocation(id.getNamespace(), "skill_trees/" + id.getPath());
+        return ResourceLocation.fromNamespaceAndPath(id.getNamespace(), "skill_trees/" + id.getPath());
     }
 }

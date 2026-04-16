@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.pickaid.passivestjs.compat.skilltree.PSTContentTitles;
+import com.pickaid.passivestjs.skilltree.PSTContentTitles;
 import com.pickaid.passivestjs.kubejs.content.Skills;
 import com.pickaid.passivestjs.kubejs.id.PSTSkillId;
 import dev.latvian.mods.kubejs.typings.Info;

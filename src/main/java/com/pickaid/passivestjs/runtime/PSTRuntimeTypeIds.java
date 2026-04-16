@@ -4,6 +4,7 @@ import daripher.skilltree.init.PSTRegistries;
 import daripher.skilltree.skill.bonus.EventListenerBonus;
 import daripher.skilltree.skill.bonus.SkillBonus;
 import daripher.skilltree.skill.bonus.event.SkillEventListener;
+import daripher.skilltree.skill.bonus.item.ItemBonus;
 import daripher.skilltree.skill.requirement.SkillRequirement;
 import net.minecraft.resources.ResourceLocation;
 
@@ -63,6 +64,22 @@ public final class PSTRuntimeTypeIds {
 
         try {
             ResourceLocation key = PSTRegistries.SKILL_REQUIREMENTS.get().getKey(requirement.getSerializer());
+            return key == null ? UNKNOWN : key.toString();
+        } catch (Throwable ignored) {
+            return UNKNOWN;
+        }
+    }
+
+    public static String itemBonusId(ItemBonus<?> bonus) {
+        if (bonus == null) {
+            return UNKNOWN;
+        }
+        if (bonus instanceof PSTCustomRuntimeItemBonus runtime) {
+            return runtime.node().id().toString();
+        }
+
+        try {
+            ResourceLocation key = PSTRegistries.ITEM_BONUSES.get().getKey(bonus.getSerializer());
             return key == null ? UNKNOWN : key.toString();
         } catch (Throwable ignored) {
             return UNKNOWN;

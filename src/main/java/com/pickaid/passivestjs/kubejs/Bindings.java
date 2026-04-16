@@ -2,6 +2,7 @@ package com.pickaid.passivestjs.kubejs;
 
 import com.pickaid.passivestjs.kubejs.id.PSTSkillId;
 import com.pickaid.passivestjs.kubejs.id.PSTTreeId;
+import com.pickaid.passivestjs.kubejs.runtime.PSTItemView;
 import com.pickaid.passivestjs.kubejs.runtime.PSTPlayerView;
 import com.pickaid.passivestjs.kubejs.runtime.PSTSkillView;
 import com.pickaid.passivestjs.kubejs.runtime.PSTTreeView;
@@ -13,6 +14,7 @@ import daripher.skilltree.skill.PassiveSkillTree;
 import dev.latvian.mods.kubejs.typings.Info;
 import dev.latvian.mods.kubejs.typings.Param;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 public final class Bindings {
     public static final Bindings INSTANCE = new Bindings();
@@ -58,5 +60,15 @@ public final class Bindings {
             return null;
         }
         return new PSTTreeView(tree);
+    }
+
+    @Info(value = "Returns the PST item-bonus helper view for the given stack.", params = {
+            @Param(name = "stack", value = "The item stack whose PST item bonuses should be exposed.")
+    })
+    public PSTItemView item(ItemStack stack) {
+        if (stack == null) {
+            return null;
+        }
+        return new PSTItemView(stack);
     }
 }

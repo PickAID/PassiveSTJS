@@ -1,0 +1,25 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.pickaid.passivestjs.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "mixins.passivestjs.refmap.json",
+  "mixins": [
+    "LearnSkillMessageAccessor",
+    "LearnSkillMessageMixin",
+    "NetworkHelperMixin",
+    "PassiveSkillMixin",
+    "SkillBonusHandlerMixin",
+    "SkillsReloaderMixin",
+    "SkillTreesReloaderMixin"
+  ],
+  "client": [
+    "client.PSTClientCommandsMixin",
+    "client.SkillTreeEditorDataMixin",
+    "client.SkillTreeSelectionButtonMixin",
+    "client.TooltipHelperMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

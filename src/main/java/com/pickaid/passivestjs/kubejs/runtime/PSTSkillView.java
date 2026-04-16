@@ -1,6 +1,6 @@
 package com.pickaid.passivestjs.kubejs.runtime;
 
-import com.pickaid.passivestjs.compat.skilltree.PSTContentTitles;
+import com.pickaid.passivestjs.skilltree.PSTContentTitles;
 import daripher.skilltree.skill.PassiveSkill;
 import dev.latvian.mods.kubejs.typings.Info;
 import net.minecraft.network.chat.Component;

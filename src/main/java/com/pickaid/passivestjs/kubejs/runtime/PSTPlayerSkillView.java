@@ -1,6 +1,6 @@
 package com.pickaid.passivestjs.kubejs.runtime;
 
-import com.pickaid.passivestjs.compat.skilltree.PSTSkillLearningRules;
+import com.pickaid.passivestjs.skilltree.PSTSkillLearningRules;
 import com.pickaid.passivestjs.kubejs.id.PSTSkillId;
 import com.pickaid.passivestjs.runtime.PSTCustomRuntimeSkillBonus;
 import daripher.skilltree.capability.skill.IPlayerSkills;

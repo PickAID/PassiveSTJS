@@ -4,9 +4,12 @@ import com.google.gson.JsonObject;
 import com.pickaid.passivestjs.kubejs.id.PSTSkillId;
 import com.pickaid.passivestjs.kubejs.id.PSTTreeId;
 import com.pickaid.passivestjs.kubejs.registry.builder.PSTEventListenerSerializerBuilder;
+import com.pickaid.passivestjs.kubejs.registry.builder.PSTItemBonusSerializerBuilder;
 import com.pickaid.passivestjs.kubejs.registry.builder.PSTSkillBonusSerializerBuilder;
 import com.pickaid.passivestjs.kubejs.registry.builder.PSTSkillRequirementSerializerBuilder;
 import com.pickaid.passivestjs.kubejs.runtime.PSTBonusView;
+import com.pickaid.passivestjs.kubejs.runtime.PSTItemBonusView;
+import com.pickaid.passivestjs.kubejs.runtime.PSTItemView;
 import com.pickaid.passivestjs.kubejs.runtime.PSTListenerView;
 import com.pickaid.passivestjs.kubejs.runtime.PSTPlayerSkillView;
 import com.pickaid.passivestjs.kubejs.runtime.PSTPlayerView;
@@ -22,6 +25,8 @@ import daripher.skilltree.skill.bonus.SkillBonus;
 import daripher.skilltree.skill.requirement.SkillRequirement;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import com.pickaid.passivestjs.kubejs.registry.PSTSerializerMetadataIndex;
 import com.pickaid.passivestjs.runtime.PSTSerializerObjectIndex;
 import com.pickaid.passivestjs.runtime.tooltip.PSTTooltipSpecRegistry;
@@ -30,6 +35,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,9 +48,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class BindingsRuntimeViewTest {
     @BeforeAll
     static void bootstrapMinecraftRegistries() throws ReflectiveOperationException {
+        ensureGameVersion();
         var bootstrapped = net.minecraft.server.Bootstrap.class.getDeclaredField("isBootstrapped");
         bootstrapped.setAccessible(true);
         bootstrapped.setBoolean(null, true);
+
+        var gamePath = net.minecraftforge.fml.loading.FMLLoader.class.getDeclaredField("gamePath");
+        gamePath.setAccessible(true);
+        gamePath.set(null, Path.of(".").toAbsolutePath().normalize());
     }
 
     @AfterEach
@@ -298,6 +309,32 @@ class BindingsRuntimeViewTest {
         assertTrue(requirementView.node().bool("allow").orElseThrow());
     }
 
+    @Test
+    void itemViewExposesRuntimeBonusesAndMutations() {
+        new PSTItemBonusSerializerBuilder(ResourceLocation.fromNamespaceAndPath("kubejs", "smoke_item_bonus"))
+                .createObject();
+
+        ItemStack stack = new ItemStack(Items.SHIELD);
+        PSTItemView view = Bindings.INSTANCE.item(stack);
+
+        assertNotNull(view);
+        assertEquals(0, view.bonusCount());
+        assertTrue(view.bonuses().isEmpty());
+
+        view.addItemBonus(com.pickaid.passivestjs.kubejs.id.PSTItemBonusId.parse("kubejs:smoke_item_bonus"), bonus -> {
+            bonus.number("amount", 3.5D);
+        });
+
+        assertEquals(1, view.bonusCount());
+        PSTItemBonusView customBonus = view.bonuses().get(0);
+        assertEquals("kubejs:smoke_item_bonus", customBonus.typeId());
+        assertEquals(3.5D, customBonus.node().number("amount").orElseThrow(), 0.0001D);
+
+        assertEquals(1, view.clearBonuses());
+        assertEquals(0, view.bonusCount());
+        assertTrue(view.bonuses().isEmpty());
+    }
+
     private static PassiveSkill skill(String id) {
         ResourceLocation resourceId = ResourceLocation.tryParse(id);
         return new PassiveSkill(
@@ -308,6 +345,15 @@ class BindingsRuntimeViewTest {
                 ResourceLocation.tryParse("skilltree:textures/tooltip/lesser.png"),
                 false
         );
+    }
+
+    private static void ensureGameVersion() throws ReflectiveOperationException {
+        try {
+            net.minecraft.SharedConstants.class.getDeclaredMethod("tryDetectVersion").invoke(null);
+            return;
+        } catch (NoSuchMethodException ignored) {
+        }
+        net.minecraft.SharedConstants.class.getDeclaredMethod("m_142977_").invoke(null);
     }
 
     private static final class TrackingPlayerSkills extends PlayerSkills {

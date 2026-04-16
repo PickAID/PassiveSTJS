@@ -22,6 +22,8 @@ class PassiveSTJSLayoutTest {
         Path buildTxt = projectRoot.resolve("build.txt");
         Path gradleWrapperScript = projectRoot.resolve("gradlew");
         Path gradleWrapperProperties = projectRoot.resolve("gradle/wrapper/gradle-wrapper.properties");
+        Path pstSkilltreePackage = projectRoot.resolve("src/main/java/com/pickaid/passivestjs/skilltree");
+        Path legacyCompatSkilltreePackage = projectRoot.resolve("src/main/java/com/pickaid/passivestjs/compat/skilltree");
         Properties buildProperties = readProperties(buildTxt);
         String modsTomlContent = Files.readString(modsToml);
 
@@ -30,6 +32,12 @@ class PassiveSTJSLayoutTest {
         assertTrue(Files.exists(modsToml));
         assertTrue(Files.exists(gradleWrapperScript));
         assertTrue(Files.exists(gradleWrapperProperties));
+        assertTrue(Files.exists(pstSkilltreePackage));
+        assertTrue(Files.exists(pstSkilltreePackage.resolve("PSTContentTitles.java")));
+        assertTrue(Files.exists(pstSkilltreePackage.resolve("PSTEditorCompat.java")));
+        assertTrue(Files.exists(pstSkilltreePackage.resolve("PSTNetworkComponents.java")));
+        assertTrue(Files.exists(pstSkilltreePackage.resolve("PSTSkillLearningRules.java")));
+        assertTrue(Files.notExists(legacyCompatSkilltreePackage));
         assertEquals(
                 "com.pickaid.passivestjs.kubejs.PassiveSTJSKubePlugin",
                 Files.readString(pluginResource).trim()
