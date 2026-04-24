@@ -1,0 +1,64 @@
+schema_version = 1
+template_version = "1.20.1-template-1.0.0"
+
+[mod]
+mod_id = "passivestjs"
+mod_name = "PassiveSTJS"
+version = "0.2.0"
+version_suffix = ""
+group = "com.pickaid"
+authors = ["CrychicTeam-M1hono"]
+license = "MIT"
+description = "Passive Skill Tree JS bridge mod."
+credits = "None"
+issue_tracker_url = "https://github.com/PickAID/PassiveSTJS/issues"
+
+[features]
+jei = false
+curios = false
+geckolib = false
+player_animator = false
+mixin_extras = false
+
+[overrides]
+# Optional built-in feature version overrides.
+# jei_version = "15.2.0.27"
+# curios_version = "5.9.1+1.20.1"
+# geckolib_version = "4.4.9"
+# player_animator_version = "1.0.2+1.20"
+# bendylib_version = "1.0.2"
+# mixin_extras_version = "0.2.0-beta.8"
+
+[repositories]
+# Common ecosystem repositories are listed directly so the project surface stays visible.
+blamejared = "https://maven.blamejared.com/"
+tterrag = "https://maven.tterrag.com/"
+sponge = "https://repo.spongepowered.org/maven"
+geckolib = "https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/"
+curios = "https://maven.theillusivec4.top/"
+kosmx = "https://maven.kosmx.dev/"
+cursemaven = "https://cursemaven.com"
+architectury = "https://maven.architectury.dev"
+latvian = "https://maven.latvian.dev/releases"
+jitpack = "https://jitpack.io"
+
+[dependencies]
+# Generic dependency buckets stay available if this project later moves more logic out of build.gradle.
+
+[compat]
+# Legacy compatibility values still consumed by the current build.gradle.
+architectury_version = "9.1.12"
+curios_version = "5.14.1+1.20.1"
+kubejs_version = "2001.6.5-build.22"
+probejs_legacy_version = "6773935"
+rhino_version = "2001.2.2-build.17"
+
+[publish]
+maven_url = ""
+curseforge_project = 0
+modrinth_project = ""
+release_type = "alpha"
+
+[naming]
+archive_name = "PassiveSTJS"
+jar_format = "{archive_name}-{mc_version}-{version}"

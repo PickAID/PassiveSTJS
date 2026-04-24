@@ -9,3 +9,5 @@ logs
 rhino.local.properties
 
 docs/superpowers
+
+project.local.toml
