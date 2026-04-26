@@ -20,6 +20,7 @@ class GradleRunConfigLayoutTest {
         assertTrue(buildGradleText.contains("run/server"));
         assertTrue(buildGradleText.contains("curios-forge"));
         assertTrue(buildGradleText.contains("attributefix-280510"));
+        assertTrue(buildGradleText.contains("probejs-585406"));
         assertTrue(buildGradleText.contains("probejs-legacy-956446"));
     }
 }

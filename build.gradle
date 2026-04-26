@@ -131,6 +131,7 @@ def resolvePassiveSkillTreeJar(String mcVersion) {
 }
 
 def passiveSkillTreeJar = resolvePassiveSkillTreeJar(props["mc_version"].toString())
+def probeJsVersion = providers.gradleProperty("probejsVersion").orNull ?: props["probejs_version"]
 def probeJsLegacyVersion = providers.gradleProperty("probejsLegacyVersion").orNull ?: props["probejs_legacy_version"]
 def passiveSkillTreeCurseFileId = "7897205"
 def passiveSkillTreeJarVersion = passiveSkillTreeJar != null ? passiveSkillTreeJar.name.substring("PassiveSkillTree-".length(), passiveSkillTreeJar.name.length() - ".jar".length()) : null
@@ -158,12 +159,15 @@ dependencies {
     implementation fg.deobf("dev.latvian.mods:rhino-forge:${props["rhino_version"]}")
     implementation fg.deobf("dev.architectury:architectury-forge:${props["architectury_version"]}")
     implementation fg.deobf(passiveSkillTreeDependency)
+    compileOnly fg.deobf("curse.maven:probejs-585406:${probeJsVersion}")
     compileOnly fg.deobf("curse.maven:probejs-legacy-956446:${probeJsLegacyVersion}")
+    runtimeOnly fg.deobf("curse.maven:probejs-585406:${probeJsVersion}")
     runtimeOnly fg.deobf("curse.maven:probejs-legacy-956446:${probeJsLegacyVersion}")
     runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${props["curios_version"]}")
     runtimeOnly fg.deobf("curse.maven:attributefix-280510:7612291")
     runtimeOnly fg.deobf("curse.maven:mmmmmmmmmmmm-225738:4602101")
     runtimeOnly fg.deobf("curse.maven:selene-499980:7664875")
+    testImplementation fg.deobf("curse.maven:probejs-585406:${probeJsVersion}")
     testImplementation fg.deobf("curse.maven:probejs-legacy-956446:${probeJsLegacyVersion}")
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.2"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.2"

@@ -4,7 +4,7 @@ template_version = "1.20.1-template-1.0.0"
 [mod]
 mod_id = "passivestjs"
 mod_name = "PassiveSTJS"
-version = "0.2.0"
+version = "0.2.1"
 version_suffix = ""
 group = "com.pickaid"
 authors = ["CrychicTeam-M1hono"]
@@ -50,6 +50,7 @@ jitpack = "https://jitpack.io"
 architectury_version = "9.1.12"
 curios_version = "5.14.1+1.20.1"
 kubejs_version = "2001.6.5-build.22"
+probejs_version = "5227399"
 probejs_legacy_version = "6773935"
 rhino_version = "2001.2.2-build.17"
 

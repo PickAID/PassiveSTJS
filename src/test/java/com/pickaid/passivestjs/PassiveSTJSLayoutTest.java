@@ -6,8 +6,9 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Properties;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,17 +20,22 @@ class PassiveSTJSLayoutTest {
         Path modEntrypoint = projectRoot.resolve("src/main/java/com/pickaid/passivestjs/PassiveSTJS.java");
         Path pluginResource = projectRoot.resolve("src/main/resources/kubejs.plugins.txt");
         Path modsToml = projectRoot.resolve("src/main/resources/META-INF/mods.toml");
-        Path buildTxt = projectRoot.resolve("build.txt");
+        Path projectToml = projectRoot.resolve("project.toml");
+        Path templateDefaultsToml = projectRoot.resolve("gradle/template-defaults.toml");
         Path gradleWrapperScript = projectRoot.resolve("gradlew");
         Path gradleWrapperProperties = projectRoot.resolve("gradle/wrapper/gradle-wrapper.properties");
         Path pstSkilltreePackage = projectRoot.resolve("src/main/java/com/pickaid/passivestjs/skilltree");
         Path legacyCompatSkilltreePackage = projectRoot.resolve("src/main/java/com/pickaid/passivestjs/compat/skilltree");
-        Properties buildProperties = readProperties(buildTxt);
+        String projectTomlContent = Files.readString(projectToml);
+        String templateDefaultsContent = Files.readString(templateDefaultsToml);
         String modsTomlContent = Files.readString(modsToml);
+        String modAuthors = stringArrayValue(projectTomlContent, "mod", "authors");
 
         assertTrue(Files.exists(modEntrypoint));
         assertTrue(Files.exists(pluginResource));
         assertTrue(Files.exists(modsToml));
+        assertTrue(Files.exists(projectToml));
+        assertTrue(Files.exists(templateDefaultsToml));
         assertTrue(Files.exists(gradleWrapperScript));
         assertTrue(Files.exists(gradleWrapperProperties));
         assertTrue(Files.exists(pstSkilltreePackage));
@@ -42,40 +48,55 @@ class PassiveSTJSLayoutTest {
                 "com.pickaid.passivestjs.kubejs.PassiveSTJSKubePlugin",
                 Files.readString(pluginResource).trim()
         );
-        assertTrue(modsTomlContent.contains("modId=\"" + buildProperties.getProperty("mod_id") + "\""));
-        assertTrue(modsTomlContent.contains("displayName=\"" + buildProperties.getProperty("mod_name") + "\""));
-        assertTrue(modsTomlContent.contains("authors=\"" + buildProperties.getProperty("mod_authors") + "\""));
-        assertTrue(modsTomlContent.contains("license=\"" + buildProperties.getProperty("mod_license") + "\""));
-        assertTrue(modsTomlContent.contains(buildProperties.getProperty("mod_description")));
-        assertTrue(modsTomlContent.contains("loaderVersion=\"" + buildProperties.getProperty("forge_range") + "\""));
-        assertTrue(modsTomlContent.contains("versionRange=\"" + buildProperties.getProperty("mc_range") + "\""));
-        assertTrue(modsTomlContent.contains("versionRange=\"[" + buildProperties.getProperty("kubejs_version") + ",)\""));
+        assertTrue(modsTomlContent.contains("modId=\"" + stringValue(projectTomlContent, "mod", "mod_id") + "\""));
+        assertTrue(modsTomlContent.contains("displayName=\"" + stringValue(projectTomlContent, "mod", "mod_name") + "\""));
+        assertTrue(modsTomlContent.contains("authors=\"" + modAuthors + "\""));
+        assertTrue(modsTomlContent.contains("license=\"" + stringValue(projectTomlContent, "mod", "license") + "\""));
+        assertTrue(modsTomlContent.contains(stringValue(projectTomlContent, "mod", "description")));
+        assertTrue(modsTomlContent.contains("loaderVersion=\"" + stringValue(templateDefaultsContent, "platform", "forge_range") + "\""));
+        assertTrue(modsTomlContent.contains("versionRange=\"" + stringValue(templateDefaultsContent, "platform", "mc_range") + "\""));
+        assertTrue(modsTomlContent.contains("versionRange=\"[" + stringValue(projectTomlContent, "compat", "kubejs_version") + ",)\""));
     }
 
     @Test
     void packagedJarCarriesBuildVersion() throws IOException {
         Path projectRoot = projectRoot();
-        Properties buildProperties = readProperties(projectRoot.resolve("build.txt"));
+        String projectTomlContent = Files.readString(projectRoot.resolve("project.toml"));
+        String templateDefaultsContent = Files.readString(projectRoot.resolve("gradle/template-defaults.toml"));
+        String modVersion = stringValue(projectTomlContent, "mod", "version");
         Path builtJar = projectRoot.resolve("build/libs/" +
-                buildProperties.getProperty("archive_name") + "-" +
-                buildProperties.getProperty("mc_version") + "-" +
-                buildProperties.getProperty("mod_version") + ".jar");
+                stringValue(projectTomlContent, "naming", "archive_name") + "-" +
+                stringValue(templateDefaultsContent, "platform", "mc_version") + "-" +
+                modVersion + ".jar");
 
         assertTrue(Files.exists(builtJar));
         try (JarFile jarFile = new JarFile(builtJar.toFile())) {
             assertEquals(
-                    buildProperties.getProperty("mod_version"),
+                    modVersion,
                     jarFile.getManifest().getMainAttributes().getValue("Implementation-Version")
             );
         }
     }
 
-    private static Properties readProperties(Path path) throws IOException {
-        Properties properties = new Properties();
-        try (var inputStream = Files.newInputStream(path)) {
-            properties.load(inputStream);
-        }
-        return properties;
+    private static String stringValue(String toml, String table, String key) {
+        Matcher matcher = Pattern.compile("(?m)^" + Pattern.quote(key) + "\\s*=\\s*\"([^\"]*)\"\\s*$")
+                .matcher(tableSection(toml, table));
+        assertTrue(matcher.find(), () -> "Missing TOML value [" + table + "]." + key);
+        return matcher.group(1);
+    }
+
+    private static String stringArrayValue(String toml, String table, String key) {
+        Matcher matcher = Pattern.compile("(?m)^" + Pattern.quote(key) + "\\s*=\\s*\\[(.*)]\\s*$")
+                .matcher(tableSection(toml, table));
+        assertTrue(matcher.find(), () -> "Missing TOML array [" + table + "]." + key);
+        return matcher.group(1).replace("\"", "").replace(",", ",").trim();
+    }
+
+    private static String tableSection(String toml, String table) {
+        Matcher matcher = Pattern.compile("(?ms)^\\[" + Pattern.quote(table) + "]\\s*(.*?)(?=^\\[|\\z)")
+                .matcher(toml);
+        assertTrue(matcher.find(), () -> "Missing TOML table [" + table + "]");
+        return matcher.group(1);
     }
 
     private static Path projectRoot() {
