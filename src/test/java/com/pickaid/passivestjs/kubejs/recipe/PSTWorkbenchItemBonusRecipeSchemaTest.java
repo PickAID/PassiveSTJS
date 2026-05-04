@@ -66,9 +66,9 @@ class PSTWorkbenchItemBonusRecipeSchemaTest {
         recipe.json = new JsonObject();
 
         recipe.baseEquipmentTypeCondition("shield")
-                .ingredientTag(ResourceLocation.fromNamespaceAndPath("forge", "ingots/copper").toString(), 2)
+                .ingredientTag(new ResourceLocation("forge", "ingots/copper").toString(), 2)
                 .attributeItemBonus(bonus -> {
-                    bonus.attribute(ResourceLocation.fromNamespaceAndPath("minecraft", "generic.armor").toString());
+                    bonus.attribute(new ResourceLocation("minecraft", "generic.armor").toString());
                     bonus.amount(2);
                     bonus.modifierId("8516d3f4-373e-42c3-9138-3215993b34c4");
                     bonus.bonusName("Workbench Upgrade");

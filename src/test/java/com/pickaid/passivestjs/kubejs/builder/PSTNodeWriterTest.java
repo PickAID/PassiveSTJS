@@ -22,7 +22,7 @@ class PSTNodeWriterTest {
 
     @Test
     void writesSchemaBackedNodeFields() {
-        ResourceLocation typeId = ResourceLocation.fromNamespaceAndPath("kubejs", "bleed_bonus");
+        ResourceLocation typeId = new ResourceLocation("kubejs", "bleed_bonus");
         PSTSchemaRegistry.remember(PSTSchema.builder(PSTNodeFamily.SKILL_BONUS)
                 .field("amount", field -> field.kind(PSTSchemaFieldKind.DOUBLE).required())
                 .field("target", field -> field.kind(PSTSchemaFieldKind.STRING))
@@ -40,7 +40,7 @@ class PSTNodeWriterTest {
 
     @Test
     void rejectsUnknownSchemaField() {
-        ResourceLocation typeId = ResourceLocation.fromNamespaceAndPath("kubejs", "bleed_bonus");
+        ResourceLocation typeId = new ResourceLocation("kubejs", "bleed_bonus");
         PSTSchemaRegistry.remember(PSTSchema.builder(PSTNodeFamily.SKILL_BONUS)
                 .field("amount", field -> field.kind(PSTSchemaFieldKind.DOUBLE).required())
                 .build(typeId));
@@ -52,7 +52,7 @@ class PSTNodeWriterTest {
 
     @Test
     void rejectsValueThatDoesNotMatchSchemaKind() {
-        ResourceLocation typeId = ResourceLocation.fromNamespaceAndPath("kubejs", "int_bonus");
+        ResourceLocation typeId = new ResourceLocation("kubejs", "int_bonus");
         PSTSchemaRegistry.remember(PSTSchema.builder(PSTNodeFamily.SKILL_BONUS)
                 .field("operation", field -> field.kind(PSTSchemaFieldKind.INT).required())
                 .build(typeId));
@@ -64,7 +64,7 @@ class PSTNodeWriterTest {
 
     @Test
     void writesNestedNodeFieldsAndNodeLists() {
-        ResourceLocation typeId = ResourceLocation.fromNamespaceAndPath("kubejs", "nested_bonus");
+        ResourceLocation typeId = new ResourceLocation("kubejs", "nested_bonus");
         PSTSchemaRegistry.remember(PSTSchema.builder(PSTNodeFamily.SKILL_BONUS)
                 .field("event_listener", field -> field.kind(PSTSchemaFieldKind.NODE).nodeTarget(PSTNodeFamily.EVENT_LISTENER))
                 .field("conditions", field -> field.kind(PSTSchemaFieldKind.NODE_LIST).nodeTarget(PSTNodeFamily.LIVING_CONDITION))

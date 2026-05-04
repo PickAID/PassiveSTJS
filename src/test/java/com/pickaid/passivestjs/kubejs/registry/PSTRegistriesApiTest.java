@@ -66,7 +66,7 @@ class PSTRegistriesApiTest {
     void skillBonusRegistryHandleCreatesTypedBonusBuilder() {
         BonusBuilder builder = PSTRegistriesApi.INSTANCE
                 .skillBonuses()
-                .get(PSTSkillBonusId.of(ResourceLocation.fromNamespaceAndPath("skilltree", "damage")))
+                .get(PSTSkillBonusId.of(new ResourceLocation("skilltree", "damage")))
                 .create();
 
         assertEquals("skilltree:damage", builder.type());
@@ -76,7 +76,7 @@ class PSTRegistriesApiTest {
     void itemBonusRegistryHandleCreatesTypedItemBonusBuilder() {
         ItemBonusBuilder builder = PSTRegistriesApi.INSTANCE
                 .itemBonuses()
-                .get(PSTItemBonusId.of(ResourceLocation.fromNamespaceAndPath("skilltree", "skill_bonus")))
+                .get(PSTItemBonusId.of(new ResourceLocation("skilltree", "skill_bonus")))
                 .create();
 
         assertEquals("skilltree:skill_bonus", builder.type());
@@ -91,7 +91,7 @@ class PSTRegistriesApiTest {
                 (proxy, method, args) -> switch (method.getName()) {
                     case "getValue" -> null;
                     case "getKeys" -> java.util.Set.of();
-                    case "getRegistryName" -> ResourceLocation.fromNamespaceAndPath("skilltree", "skill_bonuses");
+                    case "getRegistryName" -> new ResourceLocation("skilltree", "skill_bonuses");
                     default -> null;
                 }
         );
@@ -104,7 +104,7 @@ class PSTRegistriesApiTest {
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> view
-                        .get(PSTSkillBonusId.of(ResourceLocation.fromNamespaceAndPath("kubejs", "missing_bonus")))
+                        .get(PSTSkillBonusId.of(new ResourceLocation("kubejs", "missing_bonus")))
         );
 
         assertTrue(exception.getMessage().contains("kubejs:missing_bonus"));
@@ -127,7 +127,7 @@ class PSTRegistriesApiTest {
     @Test
     void customSkillRequirementSerializerProducesExecutableRuntimeRequirement() {
         SkillRequirement.Serializer serializer = new com.pickaid.passivestjs.kubejs.registry.builder.PSTSkillRequirementSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_requirement")
+                new ResourceLocation("kubejs", "runtime_requirement")
         )
                 .test(context -> "ready".equals(context.node().string("flag").orElse("")))
                 .createObject();
@@ -145,12 +145,12 @@ class PSTRegistriesApiTest {
     @Test
     void customLivingConditionAndMultiplierRuntimeExecuteAgainstPayload() {
         LivingEntityPredicate.Serializer conditionSerializer = new com.pickaid.passivestjs.kubejs.registry.builder.PSTLivingConditionSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_condition")
+                new ResourceLocation("kubejs", "runtime_condition")
         )
                 .test(context -> context.node().integer("threshold").orElse(0) == 4)
                 .createObject();
         LivingMultiplier.Serializer multiplierSerializer = new com.pickaid.passivestjs.kubejs.registry.builder.PSTLivingMultiplierSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_multiplier")
+                new ResourceLocation("kubejs", "runtime_multiplier")
         )
                 .value(context -> context.node().number("amount").orElse(0.0D).floatValue())
                 .createObject();
@@ -173,7 +173,7 @@ class PSTRegistriesApiTest {
     @Test
     void customNumericValueProviderReturnsConfiguredRuntimeValue() {
         FloatFunction.Serializer serializer = new com.pickaid.passivestjs.kubejs.registry.builder.PSTFloatFunctionSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_value")
+                new ResourceLocation("kubejs", "runtime_value")
         )
                 .value(context -> context.node().number("value").orElse(0.0D).floatValue())
                 .createObject();
@@ -190,18 +190,18 @@ class PSTRegistriesApiTest {
     @Test
     void customDamageItemAndEnchantmentConditionsProduceExecutableRuntimeObjects() {
         DamageCondition.Serializer damageSerializer = new com.pickaid.passivestjs.kubejs.registry.builder.PSTDamageConditionSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_damage_condition")
+                new ResourceLocation("kubejs", "runtime_damage_condition")
         )
                 .test(context -> context.damageSource() == null)
                 .createObject();
         ItemStackPredicate.Serializer itemSerializer = new com.pickaid.passivestjs.kubejs.registry.builder.PSTItemConditionSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_item_condition")
+                new ResourceLocation("kubejs", "runtime_item_condition")
         )
                 .test(context -> context.itemStack() == null)
                 .createObject();
         EnchantmentCondition.Serializer enchantmentSerializer =
                 new com.pickaid.passivestjs.kubejs.registry.builder.PSTEnchantmentConditionSerializerBuilder(
-                        ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_enchantment_condition")
+                        new ResourceLocation("kubejs", "runtime_enchantment_condition")
                 )
                         .test(context -> context.category() == null)
                         .createObject();
@@ -225,7 +225,7 @@ class PSTRegistriesApiTest {
         AtomicBoolean applied = new AtomicBoolean(false);
 
         SkillBonus.Serializer serializer = new com.pickaid.passivestjs.kubejs.registry.builder.PSTSkillBonusSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_bonus")
+                new ResourceLocation("kubejs", "runtime_bonus")
         )
                 .onLearn(context -> learnCount.incrementAndGet())
                 .onRemove(context -> removeCount.incrementAndGet())
@@ -252,13 +252,13 @@ class PSTRegistriesApiTest {
         AtomicReference<String> modeSeen = new AtomicReference<>("<unset>");
 
         new com.pickaid.passivestjs.kubejs.registry.builder.PSTEventListenerSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_listener")
+                new ResourceLocation("kubejs", "runtime_listener")
         )
                 .onTick(context -> modeSeen.set(context.node().string("mode").orElse("<missing>")))
                 .createObject();
 
         SkillBonus.Serializer serializer = new com.pickaid.passivestjs.kubejs.registry.builder.PSTSkillBonusSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_bonus")
+                new ResourceLocation("kubejs", "runtime_bonus")
         ).createObject();
 
         JsonObject json = new JsonObject();
@@ -278,7 +278,7 @@ class PSTRegistriesApiTest {
 
     @Test
     void serializerBuildersPublishSchemaMetadataForTheirRegistryEntry() {
-        var id = ResourceLocation.fromNamespaceAndPath("kubejs", "bleed_bonus");
+        var id = new ResourceLocation("kubejs", "bleed_bonus");
         var builder = new com.pickaid.passivestjs.kubejs.registry.builder.PSTSkillBonusSerializerBuilder(id);
 
         builder.schema(schema -> schema
@@ -303,22 +303,22 @@ class PSTRegistriesApiTest {
     @Test
     void runtimeSerializerTooltipsUsePstStyleTranslationKeys() {
         SkillBonus.Serializer bonusSerializer = new com.pickaid.passivestjs.kubejs.registry.builder.PSTSkillBonusSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_bonus")
+                new ResourceLocation("kubejs", "runtime_bonus")
         ).createObject();
         SkillEventListener.Serializer listenerSerializer = new com.pickaid.passivestjs.kubejs.registry.builder.PSTEventListenerSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_listener")
+                new ResourceLocation("kubejs", "runtime_listener")
         ).createObject();
         LivingEntityPredicate.Serializer conditionSerializer = new com.pickaid.passivestjs.kubejs.registry.builder.PSTLivingConditionSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_condition")
+                new ResourceLocation("kubejs", "runtime_condition")
         ).createObject();
         LivingMultiplier.Serializer multiplierSerializer = new com.pickaid.passivestjs.kubejs.registry.builder.PSTLivingMultiplierSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_multiplier")
+                new ResourceLocation("kubejs", "runtime_multiplier")
         ).createObject();
         FloatFunction.Serializer valueSerializer = new com.pickaid.passivestjs.kubejs.registry.builder.PSTFloatFunctionSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_value")
+                new ResourceLocation("kubejs", "runtime_value")
         ).createObject();
         SkillRequirement.Serializer requirementSerializer = new com.pickaid.passivestjs.kubejs.registry.builder.PSTSkillRequirementSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_requirement")
+                new ResourceLocation("kubejs", "runtime_requirement")
         ).createObject();
 
         JsonObject bonusJson = new JsonObject();
@@ -360,7 +360,7 @@ class PSTRegistriesApiTest {
         AtomicReference<Double> appliedMultiplier = new AtomicReference<>(0.0D);
 
         SkillEventListener.Serializer listenerSerializer = new com.pickaid.passivestjs.kubejs.registry.builder.PSTEventListenerSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_listener")
+                new ResourceLocation("kubejs", "runtime_listener")
         )
                 .onSkillLearned(context -> context.apply(context.player(), 2.0D))
                 .onAttack(context -> context.apply(context.enemy(), context.node().number("scale").orElse(0.0D)))
@@ -390,19 +390,19 @@ class PSTRegistriesApiTest {
     @Test
     void runtimeSkillBonusTooltipComposesCustomPrefixFragmentsFromNestedNodes() {
         new com.pickaid.passivestjs.kubejs.registry.builder.PSTSkillBonusSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_bonus")
+                new ResourceLocation("kubejs", "runtime_bonus")
         )
                 .effectText(Component.translatable("skill_bonus.kubejs.runtime_bonus"))
                 .schema(schema -> schema.field("event_listener", field -> field.kind(PSTSchemaFieldKind.NODE).nodeTarget(PSTNodeFamily.EVENT_LISTENER)))
                 .createObject();
         new com.pickaid.passivestjs.kubejs.registry.builder.PSTEventListenerSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_listener")
+                new ResourceLocation("kubejs", "runtime_listener")
         )
                 .prefixText(Component.translatable("event_listener.kubejs.runtime_listener"))
                 .schema(schema -> schema.field("player_condition", field -> field.kind(PSTSchemaFieldKind.NODE).nodeTarget(PSTNodeFamily.LIVING_CONDITION)))
                 .createObject();
         new com.pickaid.passivestjs.kubejs.registry.builder.PSTLivingConditionSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_condition")
+                new ResourceLocation("kubejs", "runtime_condition")
         )
                 .prefixText(Component.translatable("living_condition.kubejs.runtime_condition"))
                 .createObject();
@@ -417,7 +417,7 @@ class PSTRegistriesApiTest {
         bonusJson.add("event_listener", listenerJson);
 
         PSTRuntimeNode node = new PSTRuntimeNode(
-                PSTSerializerMetadataIndex.find(PSTNodeFamily.SKILL_BONUS, ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_bonus"))
+                PSTSerializerMetadataIndex.find(PSTNodeFamily.SKILL_BONUS, new ResourceLocation("kubejs", "runtime_bonus"))
                         .orElseThrow(),
                 bonusJson
         );
@@ -443,7 +443,7 @@ class PSTRegistriesApiTest {
     @Test
     void placeholderItemBonusSerializerTooltipsUsePstStyleTranslationKeys() {
         ItemBonus.Serializer itemBonusSerializer = new com.pickaid.passivestjs.kubejs.registry.builder.PSTItemBonusSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_item_bonus")
+                new ResourceLocation("kubejs", "runtime_item_bonus")
         ).createObject();
 
         ItemBonus<?> itemBonus = itemBonusSerializer.createDefaultInstance();

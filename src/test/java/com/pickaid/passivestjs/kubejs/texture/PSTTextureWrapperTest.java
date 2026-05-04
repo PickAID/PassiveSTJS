@@ -10,7 +10,7 @@ class PSTTextureWrapperTest {
     @Test
     void textureWrapperAcceptsResourceLocationsAndStrings() {
         PSTTexture fromString = PSTTexture.parse("minecraft:textures/item/amethyst_shard.png");
-        PSTTexture fromLocation = PSTTexture.parse(ResourceLocation.fromNamespaceAndPath("skilltree", "textures/tooltip/lesser.png"));
+        PSTTexture fromLocation = PSTTexture.parse(new ResourceLocation("skilltree", "textures/tooltip/lesser.png"));
 
         assertEquals("minecraft:textures/item/amethyst_shard.png", fromString.id());
         assertEquals("skilltree:textures/tooltip/lesser.png", fromLocation.id());

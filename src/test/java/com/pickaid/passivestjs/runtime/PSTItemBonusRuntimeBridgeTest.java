@@ -194,7 +194,7 @@ class PSTItemBonusRuntimeBridgeTest {
     }
 
     private static net.minecraft.resources.ResourceLocation id(String namespace, String path) {
-        return net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(namespace, path);
+        return new net.minecraft.resources.ResourceLocation(namespace, path);
     }
 
     private static JsonObject typed(String type, java.util.function.Consumer<JsonObject> consumer) {

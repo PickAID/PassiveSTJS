@@ -35,10 +35,10 @@ class PSTRuntimeTypeIdsTest {
     @Test
     void customRuntimeTypesExposeRegistryIdsAndNodes() {
         SkillBonus.Serializer bonusSerializer = new PSTSkillBonusSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "typed_bonus")
+                new ResourceLocation("kubejs", "typed_bonus")
         ).createObject();
         SkillRequirement.Serializer requirementSerializer = new PSTSkillRequirementSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "typed_requirement")
+                new ResourceLocation("kubejs", "typed_requirement")
         ).test(context -> true).createObject();
 
         JsonObject bonusJson = new JsonObject();

@@ -103,8 +103,8 @@ class SkillTreeContentEventJSLifecycleTest {
     @Test
     void afterPostedWithoutWrappedResourceManagerStillAppliesRuntimeContent() {
         RecordingSkillTreeContentEvent event = new RecordingSkillTreeContentEvent();
-        ResourceLocation treeId = ResourceLocation.fromNamespaceAndPath("kubejs", "after_post_tree");
-        ResourceLocation skillId = ResourceLocation.fromNamespaceAndPath("kubejs", "after_post_root");
+        ResourceLocation treeId = new ResourceLocation("kubejs", "after_post_tree");
+        ResourceLocation skillId = new ResourceLocation("kubejs", "after_post_root");
 
         event.editTree(PSTTreeId.of(treeId))
                 .startingSkill(PSTSkillId.of(skillId))
@@ -141,12 +141,12 @@ class SkillTreeContentEventJSLifecycleTest {
             }
             ResourceLocation jsonId = id.getPath().endsWith(".json")
                     ? id
-                    : ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + ".json");
+                    : new ResourceLocation(id.getNamespace(), id.getPath() + ".json");
             jsonById.put(jsonId, json.toString());
         }
 
         private String getJson(ResourceLocation id) {
-            ResourceLocation jsonId = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + ".json");
+            ResourceLocation jsonId = new ResourceLocation(id.getNamespace(), id.getPath() + ".json");
             return jsonById.get(jsonId);
         }
 

@@ -236,7 +236,7 @@ class SkillBuilderDslTest {
 
     @Test
     void dynamicBonusNodeRejectsUnknownSchemaField() {
-        ResourceLocation typeId = ResourceLocation.fromNamespaceAndPath("kubejs", "bleed_bonus");
+        ResourceLocation typeId = new ResourceLocation("kubejs", "bleed_bonus");
         PSTSchemaRegistry.remember(PSTSchema.builder(PSTNodeFamily.SKILL_BONUS)
                 .field("amount", field -> field.kind(PSTSchemaFieldKind.DOUBLE).required())
                 .build(typeId));
@@ -543,7 +543,7 @@ class SkillBuilderDslTest {
 
     @SuppressWarnings("unchecked")
     private static PSTRegistryTypeHandle<BonusBuilder> bonusHandle(String id) throws Exception {
-        ResourceLocation resourceLocation = ResourceLocation.fromNamespaceAndPath("kubejs", id.substring(id.indexOf(':') + 1));
+        ResourceLocation resourceLocation = new ResourceLocation("kubejs", id.substring(id.indexOf(':') + 1));
         Class<?> factoryType = Class.forName("com.pickaid.passivestjs.kubejs.registry.PSTRegistryBuilderFactory");
         Object factory = Proxy.newProxyInstance(
                 factoryType.getClassLoader(),
@@ -563,7 +563,7 @@ class SkillBuilderDslTest {
 
     @SuppressWarnings("unchecked")
     private static PSTRegistryTypeHandle<RequirementBuilder> requirementHandle(String id) throws Exception {
-        ResourceLocation resourceLocation = ResourceLocation.fromNamespaceAndPath("kubejs", id.substring(id.indexOf(':') + 1));
+        ResourceLocation resourceLocation = new ResourceLocation("kubejs", id.substring(id.indexOf(':') + 1));
         Class<?> factoryType = Class.forName("com.pickaid.passivestjs.kubejs.registry.PSTRegistryBuilderFactory");
         Object factory = Proxy.newProxyInstance(
                 factoryType.getClassLoader(),

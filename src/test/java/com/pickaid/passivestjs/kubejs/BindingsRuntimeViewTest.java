@@ -75,7 +75,7 @@ class BindingsRuntimeViewTest {
         root.setTitleColor("#ffaa00");
         root.setPosition(12.5F, -4.0F);
         root.getTags().add("core");
-        root.getDirectConnections().add(ResourceLocation.fromNamespaceAndPath("kubejs", "other"));
+        root.getDirectConnections().add(new ResourceLocation("kubejs", "other"));
         SkillsReloader.getSkills().put(root.getId(), root);
 
         PSTSkillView view = Bindings.INSTANCE.skill(PSTSkillId.of(root.getId()));
@@ -94,9 +94,9 @@ class BindingsRuntimeViewTest {
 
     @Test
     void treeLookupReturnsReadOnlyRuntimeView() {
-        ResourceLocation treeId = ResourceLocation.fromNamespaceAndPath("kubejs", "test_tree");
+        ResourceLocation treeId = new ResourceLocation("kubejs", "test_tree");
         PassiveSkillTree tree = new PassiveSkillTree(treeId);
-        ResourceLocation rootId = ResourceLocation.fromNamespaceAndPath("kubejs", "root");
+        ResourceLocation rootId = new ResourceLocation("kubejs", "root");
         tree.getSkillIds().add(rootId);
         tree.getSkillLimitations().put("core", 1);
         SkillTreesReloader.getSkillTrees().put(treeId, tree);
@@ -116,8 +116,8 @@ class BindingsRuntimeViewTest {
 
     @Test
     void runtimeViewsReturnNullForMissingDefinitions() {
-        assertNull(Bindings.INSTANCE.skill(PSTSkillId.of(ResourceLocation.fromNamespaceAndPath("kubejs", "missing"))));
-        assertNull(Bindings.INSTANCE.tree(PSTTreeId.of(ResourceLocation.fromNamespaceAndPath("kubejs", "missing_tree"))));
+        assertNull(Bindings.INSTANCE.skill(PSTSkillId.of(new ResourceLocation("kubejs", "missing"))));
+        assertNull(Bindings.INSTANCE.tree(PSTTreeId.of(new ResourceLocation("kubejs", "missing_tree"))));
     }
 
     @Test
@@ -132,8 +132,8 @@ class BindingsRuntimeViewTest {
 
         assertEquals(7, view.skillPoints());
         assertTrue(view.treeReset());
-        assertTrue(view.hasSkill(PSTSkillId.of(ResourceLocation.fromNamespaceAndPath("kubejs", "first"))));
-        assertFalse(view.hasSkill(PSTSkillId.of(ResourceLocation.fromNamespaceAndPath("kubejs", "missing"))));
+        assertTrue(view.hasSkill(PSTSkillId.of(new ResourceLocation("kubejs", "first"))));
+        assertFalse(view.hasSkill(PSTSkillId.of(new ResourceLocation("kubejs", "missing"))));
         assertEquals(List.of("kubejs:first", "kubejs:second"), view.learnedSkillIds());
         assertEquals(List.of("kubejs:first", "kubejs:second"), view.learnedSkills().stream().map(PSTSkillView::id).toList());
     }
@@ -164,12 +164,12 @@ class BindingsRuntimeViewTest {
         assertEquals("kubejs:runtime_branch", view.learnedSkill(PSTSkillId.of(branch.getId())).id());
         assertEquals(1, view.skillPoints());
         assertFalse(view.learn(PSTSkillId.of(root.getId())));
-        assertFalse(view.learn(PSTSkillId.of(ResourceLocation.fromNamespaceAndPath("kubejs", "missing_skill"))));
+        assertFalse(view.learn(PSTSkillId.of(new ResourceLocation("kubejs", "missing_skill"))));
 
         assertTrue(view.learnWithSkillPointCost(PSTSkillId.of(costed.getId()), 1));
         assertEquals(0, view.skillPoints());
         assertTrue(view.hasSkill(PSTSkillId.of(costed.getId())));
-        assertFalse(view.learnWithSkillPointCost(PSTSkillId.of(ResourceLocation.fromNamespaceAndPath("kubejs", "missing_costed")), 1));
+        assertFalse(view.learnWithSkillPointCost(PSTSkillId.of(new ResourceLocation("kubejs", "missing_costed")), 1));
         assertFalse(view.learnWithSkillPointCost(PSTSkillId.of(branch.getId()), 1));
 
         assertTrue(view.remove(PSTSkillId.of(root.getId())));
@@ -191,7 +191,7 @@ class BindingsRuntimeViewTest {
         SkillsReloader.getSkills().put(branch.getId(), branch);
         SkillsReloader.getSkills().put(other.getId(), other);
 
-        ResourceLocation treeId = ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_tree");
+        ResourceLocation treeId = new ResourceLocation("kubejs", "runtime_tree");
         PassiveSkillTree tree = new PassiveSkillTree(treeId);
         tree.getSkillIds().add(root.getId());
         tree.getSkillIds().add(branch.getId());
@@ -204,8 +204,8 @@ class BindingsRuntimeViewTest {
 
         assertTrue(view.hasLearnedInTree(PSTTreeId.of(treeId)));
         assertEquals(List.of("kubejs:tree_root"), view.learnedSkillsInTree(PSTTreeId.of(treeId)).stream().map(PSTSkillView::id).toList());
-        assertFalse(view.hasLearnedInTree(PSTTreeId.of(ResourceLocation.fromNamespaceAndPath("kubejs", "missing_tree"))));
-        assertTrue(view.learnedSkillsInTree(PSTTreeId.of(ResourceLocation.fromNamespaceAndPath("kubejs", "missing_tree"))).isEmpty());
+        assertFalse(view.hasLearnedInTree(PSTTreeId.of(new ResourceLocation("kubejs", "missing_tree"))));
+        assertTrue(view.learnedSkillsInTree(PSTTreeId.of(new ResourceLocation("kubejs", "missing_tree"))).isEmpty());
     }
 
     @Test
@@ -232,20 +232,20 @@ class BindingsRuntimeViewTest {
 
     @Test
     void playerSkillViewExposesLearnedCanLearnBonusListenerAndRequirementState() {
-        var rootId = ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_root");
-        var branchId = ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_branch");
+        var rootId = new ResourceLocation("kubejs", "runtime_root");
+        var branchId = new ResourceLocation("kubejs", "runtime_branch");
 
         new PSTEventListenerSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "smoke_listener")
+                new ResourceLocation("kubejs", "smoke_listener")
         ).createObject();
         SkillBonus.Serializer smokeBonusSerializer = new PSTSkillBonusSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "smoke_bonus")
+                new ResourceLocation("kubejs", "smoke_bonus")
         ).createObject();
         SkillBonus.Serializer triggerBonusSerializer = new PSTSkillBonusSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "trigger_bonus")
+                new ResourceLocation("kubejs", "trigger_bonus")
         ).createObject();
         SkillRequirement.Serializer smokeRequirementSerializer = new PSTSkillRequirementSerializerBuilder(
-                ResourceLocation.fromNamespaceAndPath("kubejs", "smoke_requirement")
+                new ResourceLocation("kubejs", "smoke_requirement")
         )
                 .test(context -> context.node().bool("allow").orElse(false))
                 .createObject();
@@ -275,7 +275,7 @@ class BindingsRuntimeViewTest {
         SkillsReloader.getSkills().put(rootId, root);
         SkillsReloader.getSkills().put(branchId, branch);
 
-        PassiveSkillTree tree = new PassiveSkillTree(ResourceLocation.fromNamespaceAndPath("kubejs", "runtime_tree"));
+        PassiveSkillTree tree = new PassiveSkillTree(new ResourceLocation("kubejs", "runtime_tree"));
         tree.getSkillIds().add(rootId);
         tree.getSkillIds().add(branchId);
         SkillTreesReloader.getSkillTrees().put(tree.getId(), tree);
@@ -311,7 +311,7 @@ class BindingsRuntimeViewTest {
 
     @Test
     void itemViewExposesRuntimeBonusesAndMutations() {
-        new PSTItemBonusSerializerBuilder(ResourceLocation.fromNamespaceAndPath("kubejs", "smoke_item_bonus"))
+        new PSTItemBonusSerializerBuilder(new ResourceLocation("kubejs", "smoke_item_bonus"))
                 .createObject();
 
         ItemStack stack = new ItemStack(Items.SHIELD);

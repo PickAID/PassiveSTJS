@@ -87,7 +87,7 @@ class PSTRegistryInfosTest {
                 new RegistryFixture(PSTRegistryInfos.SKILL_REQUIREMENTS, PSTNodeFamily.SKILL_REQUIREMENT, "skill_requirement"),
                 new RegistryFixture(PSTRegistryInfos.ITEM_BONUSES, PSTNodeFamily.ITEM_BONUS, "item_bonus")
         )) {
-            var id = ResourceLocation.fromNamespaceAndPath("kubejs", fixture.path());
+            var id = new ResourceLocation("kubejs", fixture.path());
             AbstractPSTSerializerBuilder<?> builder = newBuilderFromRegisteredFactory(fixture.registryInfo(), id);
             builder.schema(schema -> schema.field("value", field -> field.kind(PSTSchemaFieldKind.STRING).required()));
 

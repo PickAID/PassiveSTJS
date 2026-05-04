@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public final class PSTWorkbenchItemBonusRecipeJS extends RecipeJS {
-    public static final ResourceLocation TYPE = ResourceLocation.fromNamespaceAndPath("skilltree", "workbench_item_bonus");
+    public static final ResourceLocation TYPE = new ResourceLocation("skilltree", "workbench_item_bonus");
     public static final RecipeSchema SCHEMA = new RecipeSchema(
             PSTWorkbenchItemBonusRecipeJS.class,
             PSTWorkbenchItemBonusRecipeJS::new

@@ -169,7 +169,7 @@ class PSTRuntimeNodeTest {
     }
 
     private static ResourceLocation id(String namespace, String path) {
-        return ResourceLocation.fromNamespaceAndPath(namespace, path);
+        return new ResourceLocation(namespace, path);
     }
 
     private static JsonObject typed(String type, java.util.function.Consumer<JsonObject> consumer) {

@@ -258,10 +258,10 @@ public final class Skills {
     }
 
     static ResourceLocation toSkillResource(ResourceLocation id) {
-        return ResourceLocation.fromNamespaceAndPath(id.getNamespace(), "skills/" + id.getPath());
+        return new ResourceLocation(id.getNamespace(), "skills/" + id.getPath());
     }
 
     static ResourceLocation toSkillTreeResource(ResourceLocation id) {
-        return ResourceLocation.fromNamespaceAndPath(id.getNamespace(), "skill_trees/" + id.getPath());
+        return new ResourceLocation(id.getNamespace(), "skill_trees/" + id.getPath());
     }
 }

@@ -36,7 +36,7 @@ class PSTSkillLearningRulesTest {
         SkillsReloader.getSkills().put(utility.getId(), utility);
         SkillsReloader.getSkills().put(defense.getId(), defense);
 
-        PassiveSkillTree tree = new PassiveSkillTree(ResourceLocation.fromNamespaceAndPath("kubejs", "test_tree"));
+        PassiveSkillTree tree = new PassiveSkillTree(new ResourceLocation("kubejs", "test_tree"));
         tree.getSkillIds().add(root.getId());
         tree.getSkillIds().add(utility.getId());
         tree.getSkillIds().add(defense.getId());
