@@ -4,7 +4,7 @@ template_version = "1.20.1-template-1.0.0"
 [mod]
 mod_id = "passivestjs"
 mod_name = "PassiveSTJS"
-version = "0.2.1"
+version = "0.2.2"
 version_suffix = ""
 group = "com.pickaid"
 authors = ["CrychicTeam-M1hono"]
@@ -42,23 +42,57 @@ architectury = "https://maven.architectury.dev"
 latvian = "https://maven.latvian.dev/releases"
 jitpack = "https://jitpack.io"
 
-[dependencies]
-# Generic dependency buckets stay available if this project later moves more logic out of build.gradle.
+# Dependency buckets map directly to Gradle configurations. Use deobf_* buckets
+# for Forge/KubeJS/CurseMaven coordinates that must be remapped by ForgeGradle.
+# Common buckets:
+# - [dependencies.deobf_implementation] for required runtime mod APIs.
+# - [dependencies.deobf_compile_only] for optional integration APIs.
+# - [dependencies.deobf_runtime_only] for local smoke-test runtime mods.
+# - [dependencies.deobf_test_implementation] for test-only mod APIs.
+[dependencies.deobf_implementation]
+architectury = "dev.architectury:architectury-forge:9.1.12"
+rhino = "dev.latvian.mods:rhino-forge:2001.2.2-build.18"
+kubejs = "dev.latvian.mods:kubejs-forge:2001.6.5-build.16"
 
-[compat]
-# Legacy compatibility values still consumed by the current build.gradle.
-architectury_version = "9.1.12"
-curios_version = "5.14.1+1.20.1"
-kubejs_version = "2001.6.5-build.22"
-probejs_version = "5227399"
-probejs_legacy_version = "6773935"
-rhino_version = "2001.2.2-build.17"
+[dependencies.deobf_compile_only]
+probejs = "curse.maven:probejs-585406:5227399"
+probejs_legacy = "curse.maven:probejs-legacy-956446:6773935"
+
+[dependencies.deobf_runtime_only]
+probejs = "curse.maven:probejs-585406:5227399"
+probejs_legacy = "curse.maven:probejs-legacy-956446:6773935"
+curios = "top.theillusivec4.curios:curios-forge:5.14.1+1.20.1"
+attribute_fix = "curse.maven:attributefix-280510:7612291"
+target_dummy = "curse.maven:mmmmmmmmmmmm-225738:4602101"
+selene = "curse.maven:selene-499980:7664875"
+
+[dependencies.deobf_test_implementation]
+probejs = "curse.maven:probejs-585406:5227399"
+probejs_legacy = "curse.maven:probejs-legacy-956446:6773935"
 
 [publish]
+# Leave project IDs empty for local builds. CI/release builds should set either
+# publish.modrinth.project / publish.curseforge.project here, or keep IDs here
+# and provide tokens through environment variables.
 maven_url = ""
 curseforge_project = 0
 modrinth_project = ""
 release_type = "alpha"
+
+[publish.mods]
+# Shared release metadata used by both upload platforms unless overridden below.
+game_versions = ["1.20.1"]
+loaders = ["forge"]
+
+[publish.modrinth]
+# "version" publishes only the matching CHANGELOG.md section for mod.version.
+# Use "full" when a platform should receive the whole file.
+changelog_file = "CHANGELOG.md"
+changelog_section = "version"
+
+[publish.curseforge]
+changelog_file = "CHANGELOG.md"
+changelog_section = "version"
 
 [naming]
 archive_name = "PassiveSTJS"

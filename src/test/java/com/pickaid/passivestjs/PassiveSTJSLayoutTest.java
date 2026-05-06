@@ -55,7 +55,7 @@ class PassiveSTJSLayoutTest {
         assertTrue(modsTomlContent.contains(stringValue(projectTomlContent, "mod", "description")));
         assertTrue(modsTomlContent.contains("loaderVersion=\"" + stringValue(templateDefaultsContent, "platform", "forge_range") + "\""));
         assertTrue(modsTomlContent.contains("versionRange=\"" + stringValue(templateDefaultsContent, "platform", "mc_range") + "\""));
-        assertTrue(modsTomlContent.contains("versionRange=\"[" + stringValue(projectTomlContent, "compat", "kubejs_version") + ",)\""));
+        assertTrue(modsTomlContent.contains("versionRange=\"[" + dependencyVersion(projectTomlContent, "dependencies.deobf_implementation", "kubejs") + ",)\""));
     }
 
     @Test
@@ -90,6 +90,13 @@ class PassiveSTJSLayoutTest {
                 .matcher(tableSection(toml, table));
         assertTrue(matcher.find(), () -> "Missing TOML array [" + table + "]." + key);
         return matcher.group(1).replace("\"", "").replace(",", ",").trim();
+    }
+
+    private static String dependencyVersion(String toml, String table, String key) {
+        String notation = stringValue(toml, table, key);
+        int separator = notation.lastIndexOf(':');
+        assertTrue(separator > 0, () -> "Dependency notation should include a version: " + notation);
+        return notation.substring(separator + 1);
     }
 
     private static String tableSection(String toml, String table) {

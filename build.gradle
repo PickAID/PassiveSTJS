@@ -22,7 +22,13 @@ apply plugin: 'org.spongepowered.mixin'
 
 apply from: 'gradle/template-config.gradle'
 
+def template = project.ext.template
 def props = config
+def templateDependencies = project.ext.templateDependencies
+def hasModrinthTarget = !template.modrinthProject.isBlank()
+def hasCurseforgeTarget = template.curseforgeProject > 0L
+def modrinthUploadTaskName = "uploadModrinth"
+def curseforgeUploadTaskName = "uploadCurseForge"
 
 group = "com.pickaid"
 version = props["mod_version"]
@@ -131,8 +137,6 @@ def resolvePassiveSkillTreeJar(String mcVersion) {
 }
 
 def passiveSkillTreeJar = resolvePassiveSkillTreeJar(props["mc_version"].toString())
-def probeJsVersion = providers.gradleProperty("probejsVersion").orNull ?: props["probejs_version"]
-def probeJsLegacyVersion = providers.gradleProperty("probejsLegacyVersion").orNull ?: props["probejs_legacy_version"]
 def passiveSkillTreeCurseFileId = "7897205"
 def passiveSkillTreeJarVersion = passiveSkillTreeJar != null ? passiveSkillTreeJar.name.substring("PassiveSkillTree-".length(), passiveSkillTreeJar.name.length() - ".jar".length()) : null
 def passiveSkillTreeDependency = passiveSkillTreeJar != null
@@ -155,23 +159,20 @@ if (passiveSkillTreeJar != null) {
 
 dependencies {
     minecraft "net.minecraftforge:forge:${props["mc_version"]}-${props["forge_version"]}"
-    implementation fg.deobf("dev.latvian.mods:kubejs-forge:${props["kubejs_version"]}")
-    implementation fg.deobf("dev.latvian.mods:rhino-forge:${props["rhino_version"]}")
-    implementation fg.deobf("dev.architectury:architectury-forge:${props["architectury_version"]}")
     implementation fg.deobf(passiveSkillTreeDependency)
-    compileOnly fg.deobf("curse.maven:probejs-585406:${probeJsVersion}")
-    compileOnly fg.deobf("curse.maven:probejs-legacy-956446:${probeJsLegacyVersion}")
-    runtimeOnly fg.deobf("curse.maven:probejs-585406:${probeJsVersion}")
-    runtimeOnly fg.deobf("curse.maven:probejs-legacy-956446:${probeJsLegacyVersion}")
-    runtimeOnly fg.deobf("top.theillusivec4.curios:curios-forge:${props["curios_version"]}")
-    runtimeOnly fg.deobf("curse.maven:attributefix-280510:7612291")
-    runtimeOnly fg.deobf("curse.maven:mmmmmmmmmmmm-225738:4602101")
-    runtimeOnly fg.deobf("curse.maven:selene-499980:7664875")
-    testImplementation fg.deobf("curse.maven:probejs-585406:${probeJsVersion}")
-    testImplementation fg.deobf("curse.maven:probejs-legacy-956446:${probeJsLegacyVersion}")
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.10.2"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.10.2"
     annotationProcessor "org.spongepowered:mixin:0.8.7:processor"
+
+    def addConfiguredDependency = { Map<String, Object> dependencySpec ->
+        def dependency = project.dependencies.create(dependencySpec.notation as String) {
+            transitive = dependencySpec.transitive
+        }
+        def resolvedDependency = dependencySpec.deobf ? fg.deobf(dependency) : dependency
+        add(dependencySpec.configuration as String, resolvedDependency)
+    }
+
+    templateDependencies.each(addConfiguredDependency)
 }
 
 jar {
@@ -188,4 +189,154 @@ jar {
 test {
     useJUnitPlatform()
     dependsOn jar
+}
+
+def changelogHeadingVersion = { String headingText ->
+    headingText.trim().replaceFirst(/^\[([^\]]+)](?:\s*-\s*.*)?$/, '$1').replaceFirst(/^v(?=\d)/, "").trim()
+}
+
+def extractVersionChangelog = { String text, String version, String sourceLabel ->
+    def lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n", -1).toList()
+    def headingPattern = /^(#{1,6})\s+(.+?)\s*$/
+    def start = -1
+    def level = 0
+    def wanted = version.replaceFirst(/^v(?=\d)/, "")
+    lines.eachWithIndex { String line, int index ->
+        if (start >= 0) return
+        def matcher = line =~ headingPattern
+        if (matcher.matches() && changelogHeadingVersion(matcher[0][2]) == wanted) {
+            start = index + 1
+            level = matcher[0][1].length()
+        }
+    }
+    if (start < 0) {
+        throw new GradleException("Could not find changelog section for version ${version} in ${sourceLabel}")
+    }
+    def end = lines.size()
+    for (int index = start; index < lines.size(); index++) {
+        def matcher = lines[index] =~ headingPattern
+        if (matcher.matches() && matcher[0][1].length() <= level) {
+            end = index
+            break
+        }
+    }
+    def extracted = lines.subList(start, end).join("\n").trim()
+    if (extracted.isBlank()) {
+        throw new GradleException("Changelog section for version ${version} in ${sourceLabel} is empty")
+    }
+    extracted
+}
+
+def configuredText = { String inlineText, String relativeFile, String sectionMode, String fallbackText = "" ->
+    if (inlineText != null && !inlineText.isBlank()) return inlineText
+    if (relativeFile != null && !relativeFile.isBlank()) {
+        def source = file(relativeFile)
+        if (!source.isFile()) {
+            throw new GradleException("Configured publish text file does not exist: ${relativeFile}")
+        }
+        def text = source.getText("UTF-8")
+        return sectionMode == "full" ? text : extractVersionChangelog(text, template.finalVersion, relativeFile)
+    }
+    fallbackText
+}
+
+def modrinthChangelogText = configuredText(template.publishModrinth.changelog, template.publishModrinth.changelogFile, template.publishModrinth.changelogSection, "No changelog was specified.")
+def curseforgeChangelogText = configuredText(template.publishCurseforge.changelog, template.publishCurseforge.changelogFile, template.publishCurseforge.changelogSection, "")
+def runtimeUploadJar = tasks.jar.archiveFile
+
+def writeMultipartText = { OutputStream output, String boundary, String name, String value ->
+    output.write("--${boundary}\r\n".getBytes("UTF-8"))
+    output.write("Content-Disposition: form-data; name=\"${name}\"\r\n\r\n".getBytes("UTF-8"))
+    output.write(value.getBytes("UTF-8"))
+    output.write("\r\n".getBytes("UTF-8"))
+}
+
+def writeMultipartFile = { OutputStream output, String boundary, String name, File file ->
+    output.write("--${boundary}\r\n".getBytes("UTF-8"))
+    output.write("Content-Disposition: form-data; name=\"${name}\"; filename=\"${file.name}\"\r\n".getBytes("UTF-8"))
+    output.write("Content-Type: application/java-archive\r\n\r\n".getBytes("UTF-8"))
+    file.withInputStream { input -> input.transferTo(output) }
+    output.write("\r\n".getBytes("UTF-8"))
+}
+
+tasks.register(modrinthUploadTaskName) {
+    group = "upload"
+    description = "Uploads the built runtime jar to Modrinth using project.toml settings."
+    dependsOn("validateUploadConfiguration")
+    dependsOn("jar")
+    onlyIf { hasModrinthTarget }
+    doLast {
+        def token = System.env.MODRINTH_TOKEN ?: template.modrinthToken ?: ""
+        def metadata = [project_id: template.modrinthProject, version_number: template.finalVersion, version_title: template.publishModrinth.versionName, version_type: template.releaseType, changelog: modrinthChangelogText, game_versions: template.publishModrinth.gameVersions, loaders: template.publishModrinth.loaders, featured: false, dependencies: [], file_parts: ["file"]]
+        def boundary = "----PickAID${System.currentTimeMillis()}"
+        def connection = (HttpURLConnection) new URL("https://api.modrinth.com/v2/version").openConnection()
+        connection.setRequestMethod("POST")
+        connection.setDoOutput(true)
+        connection.setRequestProperty("Authorization", token)
+        connection.setRequestProperty("User-Agent", "PickAIDTemplate/1.0")
+        connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=${boundary}")
+        connection.outputStream.withCloseable { output ->
+            writeMultipartText(output, boundary, "data", groovy.json.JsonOutput.toJson(metadata))
+            writeMultipartFile(output, boundary, "file", runtimeUploadJar.get().asFile)
+            output.write("--${boundary}--\r\n".getBytes("UTF-8"))
+        }
+        def responseCode = connection.responseCode
+        def responseText = responseCode >= 400 ? connection.errorStream?.getText("UTF-8") : connection.inputStream?.getText("UTF-8")
+        if (responseCode < 200 || responseCode >= 300) {
+            throw new GradleException("Modrinth upload failed with HTTP ${responseCode}: ${responseText ?: ''}")
+        }
+        logger.lifecycle("Modrinth upload accepted: ${responseText ?: "HTTP ${responseCode}"}")
+    }
+}
+
+tasks.register(curseforgeUploadTaskName) {
+    group = "upload"
+    description = "Uploads the built runtime jar to CurseForge using project.toml settings."
+    dependsOn("validateUploadConfiguration")
+    dependsOn("jar")
+    onlyIf { hasCurseforgeTarget }
+    doLast {
+        def token = System.env.CURSEFORGE_TOKEN ?: template.curseforgeToken ?: ""
+        def metadata = [changelog: curseforgeChangelogText, changelogType: template.publishCurseforge.changelogType, displayName: template.publishCurseforge.displayName, gameVersions: template.publishCurseforge.gameVersions, releaseType: template.releaseType]
+        if (template.publishCurseforge.manualRelease) metadata.isManualRelease = true
+        if (template.publishCurseforge.parentFileId > 0L) metadata.parentFileID = template.publishCurseforge.parentFileId
+        def boundary = "----PickAID${System.currentTimeMillis()}"
+        def connection = (HttpURLConnection) new URL("https://minecraft.curseforge.com/api/projects/${template.curseforgeProject}/upload-file").openConnection()
+        connection.setRequestMethod("POST")
+        connection.setDoOutput(true)
+        connection.setRequestProperty("X-Api-Token", token)
+        connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=${boundary}")
+        connection.outputStream.withCloseable { output ->
+            writeMultipartText(output, boundary, "metadata", groovy.json.JsonOutput.toJson(metadata))
+            writeMultipartFile(output, boundary, "file", runtimeUploadJar.get().asFile)
+            output.write("--${boundary}--\r\n".getBytes("UTF-8"))
+        }
+        def responseCode = connection.responseCode
+        def responseText = responseCode >= 400 ? connection.errorStream?.getText("UTF-8") : connection.inputStream?.getText("UTF-8")
+        if (responseCode < 200 || responseCode >= 300) {
+            throw new GradleException("CurseForge upload failed with HTTP ${responseCode}: ${responseText ?: ''}")
+        }
+        logger.lifecycle("CurseForge upload accepted: ${responseText ?: "HTTP ${responseCode}"}")
+    }
+}
+
+def validateUploadConfiguration = tasks.register('validateUploadConfiguration') {
+    group = "upload"
+    doLast {
+        modrinthChangelogText
+        curseforgeChangelogText
+        if (!hasModrinthTarget && !hasCurseforgeTarget) {
+            throw new GradleException("At least one upload platform must be configured")
+        }
+        if (!(template.releaseType in ["alpha", "beta", "release"])) {
+            throw new GradleException("release_type must be one of alpha, beta, release")
+        }
+    }
+}
+
+tasks.register('buildAndUploadMod') {
+    group = "upload"
+    dependsOn validateUploadConfiguration
+    if (hasModrinthTarget) dependsOn modrinthUploadTaskName
+    if (hasCurseforgeTarget) dependsOn curseforgeUploadTaskName
 }
